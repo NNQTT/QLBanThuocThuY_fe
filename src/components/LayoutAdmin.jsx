@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Package, PlusCircle, ShoppingCart, ChevronRight, Menu, LogOut } from 'lucide-react'
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 
 const LayoutAdmin = () => {
     const [isOpen, setIsOpen] = useState(true)
@@ -12,6 +12,16 @@ const LayoutAdmin = () => {
         { icon: ShoppingCart, text: 'Quản lý đơn hàng' },
     ]
 
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const islogin = localStorage.getItem('isLogin');
+        if (islogin !== 'true')
+            navigate('/adminlogin');
+        else
+            navigate('/admin');
+    }, []);
+    
     return (
         <div>
             <div className="flex h-screen bg-gray-50">
