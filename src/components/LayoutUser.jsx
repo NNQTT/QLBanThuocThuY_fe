@@ -1,9 +1,39 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Menu, X, ShoppingCart, ChevronDown } from 'lucide-react'
 import { Outlet } from 'react-router-dom';
+import axios from 'axios';
 
 const LayoutUser = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const [userinfo, setUserInfo] = useState(null);
+
+    useEffect(() => {
+        const authenticateUser = async () => {
+            const token = localStorage.getItem('accessToken');
+            console.log(token);
+    
+            try {
+                const res = await axios.get('http://localhost:3000/api/authenticationLogin', {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                });
+                console.log(res);
+                if (res.status === 200) {
+                    console.log('Login successfully');
+                    setUserInfo(res.data.data);
+                }
+            } catch (error) {
+                console.error(error);
+                if (error.response && error.response.status === 400) {
+                    console.log('Quang Dieu Khum');
+                }
+            }
+        };
+    
+        authenticateUser();
+    }, []);
 
     return (
         <div>
@@ -44,15 +74,18 @@ const LayoutUser = () => {
                                 <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">3</span>
                             </a>
                             <div className="ml-4 flex items-center">
-                                <img
-                                    className="h-8 w-8 rounded-full border-2 border-[#E76F51]"
-                                    src="/placeholder.svg?height=32&width=32"
-                                    alt="User avatar"
-                                />
+                                {userinfo ? (
                                 <button className="ml-2 flex items-center text-[#4A4E69] hover:text-[#22223B] focus:outline-none">
-                                    <span className="text-sm font-medium">John Doe</span>
+                                    <span className="text-sm font-medium">{userinfo?.tentaikhoan}</span>
+
                                     <ChevronDown className="ml-1 h-4 w-4" />
                                 </button>
+                                ): (
+                                    <a href="/login" className="ml-2 flex items-center text-[#4A4E69] hover:text-[#22223B] focus:outline-none">
+                                        <span className="text-sm font-medium">Đăng nhập</span>
+                                        <ChevronDown className="ml-1 h-4 w-4" />
+                                    </a>
+                                )}
                             </div>
                         </div>
 
