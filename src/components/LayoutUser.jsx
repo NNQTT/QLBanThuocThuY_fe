@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Menu, X, ShoppingCart, ChevronDown } from 'lucide-react'
+import { Search, Menu, X, ShoppingCart, ChevronDown, Facebook, Instagram, Twitter, Mail, Phone, MapPin  } from 'lucide-react'
 import { Outlet } from 'react-router-dom';
 
 const LayoutUser = () => {
@@ -102,6 +102,76 @@ const LayoutUser = () => {
             <div>
                 <Outlet />
             </div>
+            <footer className="bg-gradient-to-r from-[#FFE5D9] to-[#FFD6BA] text-[#4A3228] shadow-lg">
+                <div className="container mx-auto px-4 py-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {/* Company Info */}
+                        <div className="space-y-4">
+                            <div className="flex items-center">
+                                <img src="/placeholder.svg?height=40&width=40" alt="Logo" className="h-12 w-12 mr-3 rounded-full shadow-md" />
+                                <span className="text-2xl font-bold font-serif tracking-wide text-[#4A3228]">Phamarcy</span>
+                            </div>
+                            <p className="text-sm">Chúng tôi cung cấp các sản phẩm dược phẩm chất lượng cao và dịch vụ chăm sóc sức khỏe tận tâm.</p>
+                            <div className="flex space-x-4">
+                                <a href="#" className="text-[#4A3228] hover:text-[#FF7F50] transition duration-300">
+                                    <Facebook size={24} />
+                                    <span className="sr-only">Facebook</span>
+                                </a>
+                                <a href="#" className="text-[#4A3228] hover:text-[#FF7F50] transition duration-300">
+                                    <Instagram size={24} />
+                                    <span className="sr-only">Instagram</span>
+                                </a>
+                                <a href="#" className="text-[#4A3228] hover:text-[#FF7F50] transition duration-300">
+                                    <Twitter size={24} />
+                                    <span className="sr-only">Twitter</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* Quick Links */}
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4">Liên kết nhanh</h3>
+                            <ul className="space-y-2">
+                                {['Trang chủ', 'Sản phẩm', 'Thương hiệu', 'Liên hệ', 'Chính sách bảo mật', 'Điều khoản sử dụng'].map((item) => (
+                                    <li key={item}>
+                                        <a href={`/${item.toLowerCase().replace(' ', '-')}`} className="hover:text-[#FF7F50] transition duration-300">
+                                            {item}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Contact Info */}
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4">Liên hệ</h3>
+                            <ul className="space-y-2">
+                                <li className="flex items-center">
+                                    <MapPin size={18} className="mr-2 text-[#FF7F50]" />
+                                    <span>123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</span>
+                                </li>
+                                <li className="flex items-center">
+                                    <Phone size={18} className="mr-2 text-[#FF7F50]" />
+                                    <a href="tel:+84123456789" className="hover:text-[#FF7F50] transition duration-300">
+                                        (84) 123 456 789
+                                    </a>
+                                </li>
+                                <li className="flex items-center">
+                                    <Mail size={18} className="mr-2 text-[#FF7F50]" />
+                                    <a href="mailto:info@phamarcy.com" className="hover:text-[#FF7F50] transition duration-300">
+                                        info@phamarcy.com
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Bottom Bar */}
+                    <div className="mt-8 pt-8 border-t border-[#4A3228] border-opacity-20 text-sm text-center">
+                        <p>&copy; {new Date().getFullYear()} Phamarcy. Tất cả các quyền được bảo lưu.</p>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }
