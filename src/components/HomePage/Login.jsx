@@ -24,8 +24,7 @@ const Login = () => {
             const res = await axios.post('http://localhost:3000/api/login', payload);
             console.log(res);
             if (res.data.success) {
-                // Save session flag
-                localStorage.setItem('isLogin', 'true');
+                localStorage.setItem('accessToken', res.data.accessToken);
 
                 message.success('Login successfully');
                 navigate('/');
