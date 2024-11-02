@@ -12,7 +12,6 @@ const Register = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
-    const [isDarkMode, setIsDarkMode] = useState(false)
 
     const navigate = useNavigate();
 
@@ -60,7 +59,7 @@ const Register = () => {
             >
                 <h3 className="text-3xl font-bold text-center">Register</h3>
 
-                <label htmlFor="email" className={'text-[#4A3228]'}>Username</label>
+                <label htmlFor="username" className={'text-[#4A3228]'}>Username</label>
 
                 <Form.Item
                     name="username"
