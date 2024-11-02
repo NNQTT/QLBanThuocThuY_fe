@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Package, PlusCircle, ShoppingCart, ChevronRight, Menu, LogOut } from 'lucide-react'
 import { Outlet, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const LayoutAdmin = () => {
     const [isOpen, setIsOpen] = useState(true)
     const [activeItem, setActiveItem] = useState('Xem tất cả sản phẩm')
+
+    const [infoadmin, setinfoadmin] = useState(null);
 
     const menuItems = [
         { icon: Package, text: 'Xem tất cả sản phẩm' },
@@ -14,14 +17,37 @@ const LayoutAdmin = () => {
 
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const islogin = localStorage.getItem('isLogin');
-        if (islogin !== 'true')
+    useEffect(() => async () => {
+        const authenticateAdmin = async () => {
+            const token = localStorage.getItem('accessToken');
+            try {
+                const res = await axios.get('http://localhost:3000/api/authenticationLogin', {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                });
+                console.log(res);
+                if (res.status === 200) {
+                    console.log('Login successfully');
+                    setinfoadmin(res.data.data);
+                    navigate('/admin');
+                }
+            } catch (error) {
+                console.error(error);
+                if (error.response && error.response.status === 400) {
+                    console.log('Login failed');
+                    navigate('/adminlogin');
+                }
+            }
+        };
+
+        authenticateAdmin();
+
+        if(!localStorage.getItem('accessToken')) {
             navigate('/adminlogin');
-        else
-            navigate('/admin');
+        }
     }, []);
-    
+
     return (
         <div>
             <div className="flex h-screen bg-gray-50">
@@ -72,8 +98,7 @@ const LayoutAdmin = () => {
                         />
                         {isOpen && (
                             <div className="flex-grow">
-                                <p className="font-semibold text-sm text-[#22223B]">John Doe</p>
-                                <p className="text-xs text-[#4A4E69]">Admin</p>
+                                <p className="text-xs text-[#4A4E69]">{infoadmin?.tentaikhoan}</p>
                             </div>
                         )}
                         {isOpen && (

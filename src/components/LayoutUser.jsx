@@ -2,17 +2,40 @@ import React, { useEffect, useState } from 'react';
 import { Search, Menu, X, ShoppingCart, ChevronDown } from 'lucide-react'
 import { Outlet } from 'react-router-dom';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { DownOutlined } from '@ant-design/icons';
+
+import { Dropdown, Menu as AntdMenu, Space, message } from 'antd';
 
 const LayoutUser = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const [userinfo, setUserInfo] = useState(null);
 
+    const handleLogout = () => {
+        localStorage.removeItem('accessToken');
+        navigate('/');
+        setUserInfo(null);
+        message.success('Đăng xuất thành công');
+    };
+
+    const listmenu = ['Trang chủ', 'Sản phẩm', 'Thương hiệu', 'Liên hệ'];
+
+    const createItems = [
+        {
+            key: '1',
+            label: 'Đăng xuất',
+            onClick: () => handleLogout()
+        }
+    ];
+
+    const navigate = useNavigate();
+
     useEffect(() => {
         const authenticateUser = async () => {
             const token = localStorage.getItem('accessToken');
             console.log(token);
-    
+
             try {
                 const res = await axios.get('http://localhost:3000/api/authenticationLogin', {
                     headers: {
@@ -27,11 +50,11 @@ const LayoutUser = () => {
             } catch (error) {
                 console.error(error);
                 if (error.response && error.response.status === 400) {
-                    console.log('Quang Dieu Khum');
+                    console.log('Login failed');
                 }
             }
         };
-    
+
         authenticateUser();
     }, []);
 
@@ -48,7 +71,7 @@ const LayoutUser = () => {
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex space-x-8">
-                            {['Trang chủ', 'Sản phẩm', 'Thương hiệu', 'Liên hệ'].map((item) => (
+                            {listmenu.map((item) => (
                                 <a
                                     key={item}
                                     href={`/${item.toLowerCase().replace(' ', '-')}`}
@@ -73,20 +96,49 @@ const LayoutUser = () => {
                                 <ShoppingCart className="h-6 w-6" />
                                 <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">3</span>
                             </a>
-                            <div className="ml-4 flex items-center">
+                            <div className="ml-4 flex items-center relative">
                                 {userinfo ? (
-                                <button className="ml-2 flex items-center text-[#4A4E69] hover:text-[#22223B] focus:outline-none">
-                                    <span className="text-sm font-medium">{userinfo?.tentaikhoan}</span>
+                                    <Dropdown menu={{ items: createItems }}>
+                                        <button
+                                            className="ml-2 flex items-center text-[#4A4E69] hover:text-[#22223B] focus:outline-none"
+                                        >
+                                            <span className="text-sm font-medium">{userinfo.tentaikhoan}</span>
+                                            <ChevronDown className="ml-1 h-4 w-4" />
+                                        </button>
+                                    </Dropdown>
+                                ) : (
+                                    <a className="text-sm font-medium" href="/login">
+                                        Đăng nhập
+                                    </a>
+                                )}
 
-                                    <ChevronDown className="ml-1 h-4 w-4" />
-                                </button>
-                                ): (
+                            </div>
+                            {/* <div className="ml-4 flex items-center">
+                                {userinfo ? (
+                                    <button
+                                        onClick={handleDropdownClick}
+                                        className="ml-2 flex items-center text-[#4A4E69] hover:text-[#22223B] focus:outline-none">
+                                        <span className="text-sm font-medium">{userinfo?.tentaikhoan}</span>
+
+                                        <ChevronDown className="ml-1 h-4 w-4" />
+                                    </button>
+                                ) : (
                                     <a href="/login" className="ml-2 flex items-center text-[#4A4E69] hover:text-[#22223B] focus:outline-none">
                                         <span className="text-sm font-medium">Đăng nhập</span>
                                         <ChevronDown className="ml-1 h-4 w-4" />
                                     </a>
                                 )}
-                            </div>
+                                {isMenuOpen && (
+                                    <div className="absolute right-0 mt-16 w-35 bg-white border border-gray-200 rounded shadow-lg">
+                                        <div
+                                            onClick={handleLogout}
+                                            className="block text-sm px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer"
+                                        >
+                                            Logout
+                                        </div>
+                                    </div>
+                                )}
+                            </div> */}
                         </div>
 
 
@@ -96,7 +148,8 @@ const LayoutUser = () => {
                             className="md:hidden text-[#4A3228] focus:outline-none hover:text-[#FF7F50] transition duration-300 ease-in-out"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                         >
-                            {isMenuOpen ? <X className="h-8 w-8" /> : <Menu className="h-8 w-8" />}
+                            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+
                         </button>
                     </div>
 

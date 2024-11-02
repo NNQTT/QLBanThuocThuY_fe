@@ -2,40 +2,43 @@
 
 import { useState } from 'react'
 
-import { Button, Form, Input, message, Image, Flex, Checkbox } from 'antd';
+import { Button, Form, Input, message, Flex } from 'antd';
 
-import { MdOutlineMailOutline, MdLockOutline } from "react-icons/md";
+import { MdLockOutline } from "react-icons/md";
+import { CiUser } from "react-icons/ci";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Login = () => {
-    const [email, setEmail] = useState('')
+    const [username, setUsername] = useState('')
+
     const [password, setPassword] = useState('')
 
     const navigate = useNavigate();
 
     const handleLogin = async () => {
         const payload = {
-            email: email,
+            username: username,
             matkhau: password,
         };
 
         try {
             const res = await axios.post('http://localhost:3000/api/login', payload);
             console.log(res);
+            console.log(payload);
             if (res.data.success) {
                 localStorage.setItem('accessToken', res.data.accessToken);
 
                 message.success('Login successfully');
                 navigate('/');
             } else {
-                message.warning('Email or password is incorrect');
+                message.warning('Username or password is incorrect');
             }
 
         } catch (error) {
-            console.error(error);
+            // console.error(error)
             if (error.response && error.response.status === 400) {
-                message.error('Email or password is incorrect');
+                message.error('Username or password is incorrect');
             } else {
                 message.error('An error occurred. Please try again.');
 
@@ -59,16 +62,15 @@ const Login = () => {
             >
                 <h3 className="text-3xl font-bold text-center">Login</h3>
 
-                <label htmlFor="email" className={'text-[#4A3228]'}>Email</label>
-
+                <label htmlFor="username" className={'text-[#4A3228]'}>Username</label>
                 <Form.Item
-                    name="email"
-                    rules={[{ required: true, message: 'Please input your Email!' }]}
+                    name="username"
+                    rules={[{ required: true, message: 'Please input your username' }]}
                 >
                     <Input
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => setUsername(e.target.value)}
                         className={'bg-[#FFCBB5] text-[#4A3228] border-[#FF7F50]'}
-                        prefix={<MdOutlineMailOutline size={20} color="#F37446" />} placeholder="Email" />
+                        prefix={<CiUser size={20} color="#F37446" />} placeholder="Enter your username" />
                 </Form.Item>
                 <label htmlFor="password" className={'text-[#4A3228]'}>Password</label>
                 <Form.Item
