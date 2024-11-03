@@ -7,7 +7,7 @@ import LoginAdmin from '../components/Admin/LoginAdmin';
 import Admin from '../components/Admin/Admin';
 import Login from '../components/HomePage/Login';
 import Register from '../components/HomePage/Register';
-
+import Cart from '../components/Cart/Cart';
 
 function Pages() {
     return (
@@ -23,6 +23,7 @@ function Pages() {
                 </Route>
                 <Route path='/adminlogin' element={<LoginAdmin />}>
                 </Route>
+                <Route path='/cart/:cartId' element={<Cart />}></Route>
             </Routes>
 
         </>
