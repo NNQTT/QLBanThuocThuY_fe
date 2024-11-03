@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Package, PlusCircle, ShoppingCart, ChevronRight, Menu, LogOut } from 'lucide-react'
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const LayoutAdmin = () => {
@@ -10,9 +10,9 @@ const LayoutAdmin = () => {
     const [infoadmin, setinfoadmin] = useState(null);
 
     const menuItems = [
-        { icon: Package, text: 'Xem tất cả sản phẩm' },
-        { icon: PlusCircle, text: 'Thêm sản phẩm mới' },
-        { icon: ShoppingCart, text: 'Quản lý đơn hàng' },
+        { icon: Package, text: 'Xem tất cả sản phẩm', path: '/admin' },
+        { icon: PlusCircle, text: 'Thêm sản phẩm mới', path: '/admin/addproduct' },
+        { icon: ShoppingCart, text: 'Quản lý đơn hàng', path: '/admin/orderlist' },
     ]
 
     const navigate = useNavigate();
@@ -73,8 +73,8 @@ const LayoutAdmin = () => {
                         <ul className="space-y-2 py-4">
                             {menuItems.map((item, index) => (
                                 <li key={index}>
-                                    <a
-                                        href="#"
+                                    <Link
+                                        to={item.path}
                                         onClick={() => setActiveItem(item.text)}
                                         className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${activeItem === item.text
                                             ? 'bg-[#E76F51] text-white shadow-md'
@@ -83,7 +83,7 @@ const LayoutAdmin = () => {
                                     >
                                         <item.icon size={20} className={`mr-4 ${isOpen ? '' : 'mx-auto'}`} />
                                         {isOpen && <span>{item.text}</span>}
-                                    </a>
+                                    </Link>
                                 </li>
                             ))}
                         </ul>
@@ -113,11 +113,12 @@ const LayoutAdmin = () => {
                 </aside>
 
                 {/* Main content */}
-                <main className="flex-grow p-8 bg-white">
-                    <h2 className="text-3xl font-bold mb-6 text-[#22223B]">{activeItem}</h2>
+                <main className="flex-grow bg-white">
+                    {/* <h2 className="text-3xl font-bold mb-6 text-[#22223B]">{activeItem}</h2>
                     <div className="bg-[#FFE5D9] p-6 rounded-lg shadow-md">
                         <p className="text-[#4A4E69]"><Outlet /></p>
-                    </div>
+                    </div> */}
+                    <Outlet/>
                 </main>
             </div>
         </div>
