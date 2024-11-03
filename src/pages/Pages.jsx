@@ -7,6 +7,8 @@ import LoginAdmin from '../components/Admin/LoginAdmin';
 import Admin from '../components/Admin/Admin';
 import Login from '../components/HomePage/Login';
 import Register from '../components/HomePage/Register';
+import Cart from '../components/Cart/Cart';
+import OrderList from '../components/Admin/OrderList';
 
 
 function Pages() {
@@ -15,11 +17,13 @@ function Pages() {
             <Routes>
                 <Route path='/' element={<LayoutUser />}>
                     <Route index element={<Home />} />
+                    <Route path='/cart/:cartId' element={<Cart />}></Route>
                 </Route>
                 <Route path='/login' element={<Login />}></Route>
                 <Route path='/register' element={<Register />}></Route>
                 <Route path='/admin' element={<LayoutAdmin />}>
                     <Route index element={<Admin />} />
+                    <Route path='orderlist' element={<OrderList/>}/>
                 </Route>
                 <Route path='/adminlogin' element={<LoginAdmin />}>
                 </Route>
