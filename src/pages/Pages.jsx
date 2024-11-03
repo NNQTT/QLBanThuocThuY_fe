@@ -17,6 +17,7 @@ function Pages() {
             <Routes>
                 <Route path='/' element={<LayoutUser />}>
                     <Route index element={<Home />} />
+                    <Route path='/cart/:cartId' element={<Cart />}></Route>
                 </Route>
                 <Route path='/login' element={<Login />}></Route>
                 <Route path='/register' element={<Register />}></Route>
@@ -26,7 +27,6 @@ function Pages() {
                 </Route>
                 <Route path='/adminlogin' element={<LoginAdmin />}>
                 </Route>
-                <Route path='/cart/:cartId' element={<Cart />}></Route>
             </Routes>
 
         </>

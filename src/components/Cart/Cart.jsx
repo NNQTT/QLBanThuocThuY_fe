@@ -54,7 +54,6 @@ export default function Cart() {
 
     return (
         <>
-            <LayoutUser />
             <div className="mx-12 md:p-12 font-sans my-5">
                 <h1 className="text-3xl font-semibold mb-4 md:px-12">Giỏ hàng của bạn</h1>
                 <p className="mb-4 text-lg md:px-12">Bạn đang có {cart.length} sản phẩm trong giỏ hàng</p>
@@ -123,7 +122,17 @@ export default function Cart() {
                             <li>• Giao hàng hỏa tốc trong vòng 4 giờ, áp dụng tại khu vực nội thành Hồ Chí Minh</li>
                         </ul>
                         <hr class="my-5 h-0.5 border-t-1 bg-neutral-100 dark:bg-white/10" />
-                        <button className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded">
+                        <button className="w-full bg-[#FF9A76] text-[#2C1A12] py-2 rounded transition-all 
+        duration-300 
+        ease-in-out
+        hover:opacity-90 
+        hover:scale-105 
+        transform
+        focus:outline-none 
+        focus:ring-2 
+        focus:ring-[#FF9A76] 
+        focus:ring-opacity-50"
+                        >
                             THANH TOÁN
                         </button>
                     </div>

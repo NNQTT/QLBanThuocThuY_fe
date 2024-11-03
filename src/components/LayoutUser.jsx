@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Menu, X, ShoppingCart, ChevronDown, Facebook, Instagram, Twitter, Mail, Phone, MapPin  } from 'lucide-react'
 import { Outlet } from 'react-router-dom';
 import axios from 'axios';
@@ -220,7 +220,7 @@ const LayoutUser = () => {
             <div>
                 <Outlet />
             </div>
-            <footer className="bg-gradient-to-r from-[#FFE5D9] to-[#FFD6BA] text-[#4A3228] shadow-lg">
+            <footer className="bg-[#FFE5D9] text-[#4A3228] shadow-lg">
                 <div className="container mx-auto px-4 py-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Company Info */}
