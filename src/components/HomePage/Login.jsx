@@ -23,12 +23,12 @@ const Login = () => {
         };
 
         try {
-            const res = await axios.post('http://localhost:3000/api/login', payload);
+            const res = await axios.post('http://localhost:3000/api/login', payload, { withCredentials: true });            
             console.log(res);
             console.log(payload);
             if (res.data.success) {
                 localStorage.setItem('accessToken', res.data.accessToken);
-
+                console.log("Luu cai coiiiiiiiiiiiiiiiiii",res.data.accessToken);
                 message.success('Login successfully');
                 navigate('/');
             } else {

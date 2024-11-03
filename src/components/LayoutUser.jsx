@@ -12,11 +12,20 @@ const LayoutUser = () => {
 
     const [userinfo, setUserInfo] = useState(null);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         localStorage.removeItem('accessToken');
-        navigate('/');
-        setUserInfo(null);
-        message.success('Đăng xuất thành công');
+        try {
+            const res = await axios.post('http://localhost:3000/api/logout', {}, {
+                withCredentials: true
+            });
+            if (res.status === 204) {
+                setUserInfo(null);
+                message.success('Đăng xuất thành công');
+                navigate('/');
+            }
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     const listmenu = ['Trang chủ', 'Sản phẩm', 'Thương hiệu', 'Liên hệ'];
@@ -40,12 +49,34 @@ const LayoutUser = () => {
                 const res = await axios.get('http://localhost:3000/api/authenticationLogin', {
                     headers: {
                         Authorization: `Bearer ${token}`,
-                    }
+                    },
+                    withCredentials: true
+
                 });
                 console.log(res);
                 if (res.status === 200) {
                     console.log('Login successfully');
                     setUserInfo(res.data.data);
+                    // localStorage.setItem('accessToken', res.data.accessToken);
+                    if (res.data?.method === 'refresh') {
+                        localStorage.removeItem('accessToken');
+                        localStorage.setItem('accessToken', res.data.accessToken);
+                        const token = res.data.accessToken;
+                        try {
+                            const res = await axios.get('http://localhost:3000/api/reloginwithrefreshtoken', {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                                withCredentials: true
+                            });
+                            setUserInfo(res.data.data);
+                        } catch (error) {
+                            console.error(error);
+                            if (error.response && error.response.status === 400) {
+                                console.log('Login failed');
+                            }
+                        }
+                    }
                 }
             } catch (error) {
                 console.error(error);
@@ -55,9 +86,10 @@ const LayoutUser = () => {
             }
         };
 
-        authenticateUser();
+        (async () => {
+            await authenticateUser();
+        })();
     }, []);
-
     return (
         <div>
             <header className="bg-gradient-to-r bg-[#FFE5D9] text-black shadow-lg">
