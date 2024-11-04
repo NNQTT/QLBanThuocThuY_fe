@@ -8,6 +8,9 @@ import Admin from '../components/Admin/Admin';
 import Login from '../components/HomePage/Login';
 import Register from '../components/HomePage/Register';
 import ProductDetail from '../components/HomePage/ProductDetail';
+import Cart from '../components/Cart/Cart';
+import OrderList from '../components/Admin/OrderList';
+import AddProduct from '../components/Admin/AddProduct';
 
 
 function Pages() {
@@ -17,11 +20,14 @@ function Pages() {
                 <Route path='/' element={<LayoutUser />}>
                     <Route index element={<Home />} />
                     <Route path='/productdetail' element={<ProductDetail />} />
+                    <Route path='/cart/:cartId' element={<Cart />}></Route>
                 </Route>
                 <Route path='/login' element={<Login />}></Route>
                 <Route path='/register' element={<Register />}></Route>
                 <Route path='/admin' element={<LayoutAdmin />}>
                     <Route index element={<Admin />} />
+                    <Route path='orderlist' element={<OrderList/>}/>
+                    <Route path='addproduct' element={<AddProduct/>}/>
                 </Route>
                 <Route path='/adminlogin' element={<LoginAdmin />}>
                 </Route>
