@@ -8,7 +8,7 @@ import Admin from '../components/Admin/Admin';
 import Login from '../components/HomePage/Login';
 import Register from '../components/HomePage/Register';
 import Cart from '../components/Cart/Cart';
-import OrderList from '../components/Admin/OrderList';
+import OrderList from '../components/Admin/Order/OrderList';
 
 
 function Pages() {
