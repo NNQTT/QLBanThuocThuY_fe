@@ -201,6 +201,11 @@ const AddProduct = () => {
           <input id="anhDaiDien" type="file" accept="image/*" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51]" />
         </div>
 
+        <div>
+          <Label htmlFor="danhMucHinhAnh" className="text-[#4A4E69]">Danh mục hình ảnh</Label>
+          <Input id="danhMucHinhAnh" type="file" accept="image/*" multiple className="mt-1 border-[#E76F51] focus:ring-[#E76F51]" />
+        </div>
+        
         <button type="submit" className="w-full bg-[#E76F51] hover:bg-[#F4A261] text-white font-bold py-2 px-4 rounded transition-colors duration-200">
           Thêm sản phẩm
         </button>
