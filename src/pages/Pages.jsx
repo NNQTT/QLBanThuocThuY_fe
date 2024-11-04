@@ -9,6 +9,7 @@ import Login from '../components/HomePage/Login';
 import Register from '../components/HomePage/Register';
 import Cart from '../components/Cart/Cart';
 import OrderList from '../components/Admin/OrderList';
+import AddProduct from '../components/Admin/AddProduct';
 
 
 function Pages() {
@@ -24,6 +25,7 @@ function Pages() {
                 <Route path='/admin' element={<LayoutAdmin />}>
                     <Route index element={<Admin />} />
                     <Route path='orderlist' element={<OrderList/>}/>
+                    <Route path='addproduct' element={<AddProduct/>}/>
                 </Route>
                 <Route path='/adminlogin' element={<LoginAdmin />}>
                 </Route>
