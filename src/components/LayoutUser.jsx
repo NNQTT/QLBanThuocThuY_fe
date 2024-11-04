@@ -20,6 +20,7 @@ const LayoutUser = () => {
             });
             if (res.status === 204) {
                 setUserInfo(null);
+                sessionStorage.removeItem('userInfo');
                 message.success('Đăng xuất thành công');
                 navigate('/');
             }
@@ -57,6 +58,9 @@ const LayoutUser = () => {
                 if (res.status === 200) {
                     console.log('Login successfully');
                     setUserInfo(res.data.data);
+                    sessionStorage.setItem('userInfo', JSON.stringify(res.data.data));
+                    sessionStorage.getItem('userInfo');
+                    console.log(sessionStorage.getItem('userInfo'));
                     // localStorage.setItem('accessToken', res.data.accessToken);
                     if (res.data?.method === 'refresh') {
                         localStorage.removeItem('accessToken');
