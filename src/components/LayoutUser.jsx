@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Menu, X, ShoppingCart, ChevronDown, Facebook, Instagram, Twitter, Mail, Phone, MapPin  } from 'lucide-react'
 import { Outlet } from 'react-router-dom';
 import axios from 'axios';
