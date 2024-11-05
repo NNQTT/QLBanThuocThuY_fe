@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Carousel, Button, Card, Tabs, InputNumber, message, Typography } from 'antd';
 import { LeftOutlined, RightOutlined, MinusOutlined, PlusOutlined, ShoppingCartOutlined, HeartOutlined } from '@ant-design/icons';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
 
 const { TabPane } = Tabs;
 const { Title, Text } = Typography;
 
 export default function ProductDetail() {
+    const { productId } = useParams();
     const [selectedFlavor, setSelectedFlavor] = useState('fish');
     const [selectedSize, setSelectedSize] = useState('150g');
     const [quantity, setQuantity] = useState(1);
+    const [product, setProduct] = useState([]);
 
     const flavors = [
         { id: 'chicken', name: 'Gà (XN)' },
@@ -27,6 +31,19 @@ export default function ProductDetail() {
     const handleAddToCart = () => {
         message.success('Thêm vào giỏ hàng thành công');
     };
+
+    useEffect(() => {
+        const fetchProductDetail = async () => {
+          try {
+            const response = await axios.get(`http://localhost:3000/product/getProductById/${productId}`);
+            setProduct(response.data); 
+          } catch (error) {
+            console.error('Error fetching product detail:', error);
+          }
+        };
+    
+        fetchProductDetail();
+      }, [productId]);
 
     return (
         <div style={{ backgroundColor: '#f9f5f2', minHeight: '100vh', padding: '2rem' }}>
@@ -70,14 +87,14 @@ export default function ProductDetail() {
                                 <span
                                     level={2}
                                     className="text-2xl font-bold font-serif tracking-wide text-[#4A3228]">
-                                    KitCat Complete Cuisine Pate Ion cho mèo
+                                    {product.TenThuoc}
                                 </span>
                                 <br />
-                                <Text type="secondary">Mã sản phẩm: 780348004730</Text>
+                                <Text type="secondary">Mã sản phẩm: {product.MaThuoc}</Text>
                             </div>
 
                             <div className="flex items-baseline gap-2">
-                                <Title level={2} style={{ color: '#ef2957', margin: 0 }} >21,000₫</Title>
+                                <Title level={2} style={{ color: '#ef2957', margin: 0 }} >{Number(product.GiaBan).toLocaleString()}₫</Title>
                             </div>
 
                             <div className="space-y-4">
@@ -162,7 +179,7 @@ export default function ProductDetail() {
                                 <TabPane tab="Thông tin sản phẩm" key="description">
                                     <Card style={{ backgroundColor: '#fff', borderRadius: '0.5rem' }}>
                                         <Text>
-                                            Pate Cho Mèo KitCat Complete Cuisine là thức ăn ướt thơm ngon 100% thành phần tươi và tự nhiên không chứa ngũ cốc, hương liệu nhân tạo hoặc chất bảo quản, đảm bảo cung cấp đủ dinh dưỡng, chất xơ, khoáng chất như một khẩu phần ăn hoàn chỉnh.
+                                            {product.CongDung}
                                         </Text>
                                     </Card>
                                 </TabPane>
