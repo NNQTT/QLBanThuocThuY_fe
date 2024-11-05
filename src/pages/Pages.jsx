@@ -11,6 +11,7 @@ import ProductDetail from '../components/HomePage/ProductDetail';
 import Cart from '../components/Cart/Cart';
 import OrderList from '../components/Admin/OrderList';
 import AddProduct from '../components/Admin/AddProduct';
+import ListProduct from '../components/HomePage/ListProduct';
 
 
 function Pages() {
@@ -19,8 +20,9 @@ function Pages() {
             <Routes>
                 <Route path='/' element={<LayoutUser />}>
                     <Route index element={<Home />} />
-                    <Route path='/productdetail' element={<ProductDetail />} />
+                    <Route path='/productdetail/:productId' element={<ProductDetail />} />
                     <Route path='/cart/' element={<Cart />}></Route>
+                    <Route path='/listproduct' element={<ListProduct />}></Route>
                 </Route>
                 <Route path='/login' element={<Login />}></Route>
                 <Route path='/register' element={<Register />}></Route>
