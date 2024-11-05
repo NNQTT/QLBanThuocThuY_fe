@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Menu, X, ShoppingCart, ChevronDown, Facebook, Instagram, Twitter, Mail, Phone, MapPin  } from 'lucide-react'
+import { Search, Menu, X, ShoppingCart, ChevronDown, Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react'
 import { Outlet } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { DownOutlined } from '@ant-design/icons';
 
 import { Dropdown, Menu as AntdMenu, Space, message } from 'antd';
@@ -11,6 +11,26 @@ const LayoutUser = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const [userinfo, setUserInfo] = useState(null);
+
+    const [cart, setCart] = useState([]);
+
+    useEffect(() => {
+        const getCart = async () => {
+            if (userinfo) {
+                const res = await axios.get(`http://localhost:3000/cart/${userinfo.tentaikhoan}`);
+                setCart(res.data);
+            } else {
+                let cart = sessionStorage.getItem('cart');
+                if (cart) {
+                    setCart(JSON.parse(cart));
+                } else {
+                    setCart([]);
+                }
+            }
+        };
+
+        getCart();
+    });
 
     const handleLogout = async () => {
         localStorage.removeItem('accessToken');
@@ -29,7 +49,11 @@ const LayoutUser = () => {
         }
     };
 
-    const listmenu = ['Trang chủ', 'Sản phẩm', 'Thương hiệu', 'Liên hệ'];
+    const menuItems = [
+        { text: 'Trang chủ', path: '/' },
+        { text: 'Sản phẩm', path: '/listproduct' },
+        { text: 'Liên hệ', path: '/' },
+    ]
 
     const createItems = [
         {
@@ -107,14 +131,14 @@ const LayoutUser = () => {
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex space-x-8">
-                            {listmenu.map((item) => (
-                                <a
-                                    key={item}
-                                    href={`/${item.toLowerCase().replace(' ', '-')}`}
+                            {menuItems.map((item) => (
+                                <Link
+                                    key={item.text}
+                                    to={item.path}
                                     className="text-lg text-[#4A3228] font-medium hover:text-[#FF7F50] transition duration-300 ease-in-out"
                                 >
-                                    {item}
-                                </a>
+                                    {item.text}
+                                </Link>
                             ))}
                         </nav>
 
@@ -130,7 +154,7 @@ const LayoutUser = () => {
                             </div>
                             <a href="/cart" className="relative hover:text-[#FF7F50] transition duration-300 ease-in-out">
                                 <ShoppingCart className="h-6 w-6" />
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">3</span>
+                                {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{cart.length}</span>}
                             </a>
                             <div className="ml-4 flex items-center relative">
                                 {userinfo ? (
