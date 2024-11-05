@@ -20,7 +20,7 @@ function Pages() {
                 <Route path='/' element={<LayoutUser />}>
                     <Route index element={<Home />} />
                     <Route path='/productdetail' element={<ProductDetail />} />
-                    <Route path='/cart/:cartId' element={<Cart />}></Route>
+                    <Route path='/cart/' element={<Cart />}></Route>
                 </Route>
                 <Route path='/login' element={<Login />}></Route>
                 <Route path='/register' element={<Register />}></Route>
