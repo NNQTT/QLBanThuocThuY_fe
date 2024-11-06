@@ -1,32 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { Carousel, Button, Card, Tabs, InputNumber, message, Typography } from 'antd';
 import { LeftOutlined, RightOutlined, MinusOutlined, PlusOutlined, ShoppingCartOutlined, HeartOutlined } from '@ant-design/icons';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { IoArrowBackCircleOutline, IoArrowForwardCircleOutline } from "react-icons/io5";
 
 const { TabPane } = Tabs;
 const { Title, Text } = Typography;
 
 export default function ProductDetail() {
     const { productId } = useParams();
-    const [selectedFlavor, setSelectedFlavor] = useState('fish');
-    const [selectedSize, setSelectedSize] = useState('150g');
     const [quantity, setQuantity] = useState(1);
     const [product, setProduct] = useState([]);
+    const [listProduct, setListProduct] = useState([]);
+    const [visibleCount, setVisibleCount] = useState(5);
 
-    const flavors = [
-        { id: 'chicken', name: 'Gà (XN)' },
-        { id: 'tuna', name: 'Cá Ngừ (TN)' },
-        { id: 'fish', name: 'Cá mồi (XL)' },
-        { id: 'salmon', name: 'Cá Hồi (CN)' },
-    ];
+    const [currentPage, setCurrentPage] = useState(1)
+    const productsPerPage = 5
 
-    const sizes = [
-        { id: '150g', name: 'Lon 150g' },
-        { id: '24pack', name: 'Thùng 24 lon' },
-        { id: '48pack', name: 'Thùng 48 lon' },
-        { id: '96pack', name: 'Thùng 96 lon' },
-    ];
+    // Calculate total pages
+    const totalPages = Math.ceil(listProduct.length / productsPerPage)
+
+    // Get current products
+    const indexOfLastProduct = currentPage * productsPerPage
+    const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+    const currentProducts = listProduct.slice(indexOfFirstProduct, indexOfLastProduct)
+
+    // Handle page navigation
+    const handlePrevious = () => {
+        setCurrentPage(prev => Math.max(prev - 1, 1))
+    }
+
+    const handleNext = () => {
+        setCurrentPage(prev => Math.min(prev + 1, totalPages))
+    }
+
+    const navigate = useNavigate();
 
     const handleAddToCart = () => {
         message.success('Thêm vào giỏ hàng thành công');
@@ -34,24 +43,51 @@ export default function ProductDetail() {
 
     useEffect(() => {
         const fetchProductDetail = async () => {
-          try {
-            const response = await axios.get(`http://localhost:3000/product/getProductById/${productId}`);
-            setProduct(response.data); 
-          } catch (error) {
-            console.error('Error fetching product detail:', error);
-          }
+            try {
+                const response = await axios.get(`http://localhost:3000/product/getProductById/${productId}`);
+                setProduct(response.data);
+            } catch (error) {
+                console.error('Error fetching product detail:', error);
+            }
         };
-    
+
         fetchProductDetail();
-      }, [productId]);
+    }, [productId]);
+
+    useEffect(() => {
+        const fetchRelatedProducts = async () => {
+            try {
+                const maloai = product.MaLoai;
+                const manhomthuoc = product.MaNhomThuoc;
+                console.log('MaLoai: ', maloai);
+                console.log('MaNhomThuoc: ', manhomthuoc);
+                const payload = {
+                    maloai: maloai,
+                    manhomthuoc: manhomthuoc
+                }
+                const response = await axios.get(`http://localhost:3000/product/getproductrelated`, { params: payload });
+                setListProduct(response.data.data);
+            } catch (error) {
+                console.error('Error fetching related products:', error);
+            }
+        };
+        if (product) {
+            fetchRelatedProducts();
+        }
+    }, [product]);
+
+    const handleProductClick = (productId) => {
+        navigate(`/productdetail/${productId}`);
+    };
 
     return (
-        <div style={{ backgroundColor: '#f9f5f2', minHeight: '100vh', padding: '2rem' }}>
+        <div className='container mx-auto px-4 py-8'>
             <div className="container mx-auto">
-                <Card style={{ backgroundColor: '#fff', borderRadius: '1rem', overflow: 'hidden' }}>
+                {/* <Card style={{ backgroundColor: '#fff', borderRadius: '1rem', overflow: 'hidden' }}> */}
+                <Card>
                     <div className="grid gap-6 lg:grid-cols-2">
                         {/* Product Images */}
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <Carousel
                                 arrows
                                 prevArrow={<LeftOutlined />}
@@ -84,61 +120,24 @@ export default function ProductDetail() {
                         {/* Product Info */}
                         <div className="space-y-6">
                             <div className="text-2xl font-bold font-serif tracking-wide text-[#4A3228]">
-                                <span
-                                    level={2}
-                                    className="text-2xl font-bold font-serif tracking-wide text-[#4A3228]">
+                                <span level={2}>
                                     {product.TenThuoc}
                                 </span>
                                 <br />
-                                <Text type="secondary">Mã sản phẩm: {product.MaThuoc}</Text>
+                                <div className='flex items-center gap-4'>
+                                    <Text type="secondary">Mã sản phẩm: {product.MaThuoc}</Text>
+
+                                    <Text type="secondary">Tình trạng: {product.TrangThai}</Text>
+                                </div>
                             </div>
 
-                            <div className="flex items-baseline gap-2">
-                                <Title level={2} style={{ color: '#ef2957', margin: 0 }} >{Number(product.GiaBan).toLocaleString()}₫</Title>
+                            <div className="text-2xl font-bold text-[#ef2957]" >
+                                <span level={2}>
+                                    {Number(product.GiaBan).toLocaleString()}₫
+                                </span>
                             </div>
 
                             <div className="space-y-4">
-                                <div>
-                                    <Text strong>Hương vị:</Text>
-                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 mt-2">
-                                        {flavors.map((flavor) => (
-                                            <Button
-                                                key={flavor.id}
-                                                type={selectedFlavor === flavor.id ? 'primary' : 'default'}
-                                                onClick={() => setSelectedFlavor(flavor.id)}
-                                                style={{
-                                                    width: '100%',
-                                                    backgroundColor: selectedFlavor === flavor.id ? '#fe995c' : '#fff',
-                                                    borderColor: '#fe995c',
-                                                    color: selectedFlavor === flavor.id ? '#fff' : '#fe995c',
-                                                }}
-                                            >
-                                                {flavor.name}
-                                            </Button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <Text strong>Kích thước:</Text>
-                                    <div className="grid grid-cols-2 gap-2 mt-2">
-                                        {sizes.map((size) => (
-                                            <Button
-                                                key={size.id}
-                                                type={selectedSize === size.id ? 'primary' : 'default'}
-                                                onClick={() => setSelectedSize(size.id)}
-                                                style={{
-                                                    width: '100%',
-                                                    backgroundColor: selectedSize === size.id ? '#fe995c' : '#fff',
-                                                    borderColor: '#fe995c',
-                                                    color: selectedSize === size.id ? '#fff' : '#fe995c',
-                                                }}
-                                            >
-                                                {size.name}
-                                            </Button>
-                                        ))}
-                                    </div>
-                                </div>
 
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center" style={{ backgroundColor: '#eed6c4', borderRadius: '0.5rem', padding: '0.25rem' }}>
@@ -161,63 +160,155 @@ export default function ProductDetail() {
                                             style={{ color: '#ef2957' }}
                                         />
                                     </div>
-                                    <Button
-                                        type="primary"
+                                    <button
                                         icon={<ShoppingCartOutlined />}
-                                        onClick={handleAddToCart}
-                                        className='flex-grow text-white borderColor: #ef2957 bg-[#ef2957]'
+                                        // onClick={handleAddToCart}
+                                        className='flex-grow text-white rounded-md h-10  bg-orange-500 hover:bg-orange-600'
                                     >
                                         Thêm vào giỏ
-                                    </Button>
+                                    </button>
                                 </div>
                             </div>
 
                             <Tabs
                                 defaultActiveKey="description"
-                                style={{ backgroundColor: '#eed6c4', borderRadius: '0.5rem', padding: '1rem' }}
+                                className='bg-[#eed6c4] px-4 py-8 rounded-lg'
                             >
                                 <TabPane tab="Thông tin sản phẩm" key="description">
-                                    <Card style={{ backgroundColor: '#fff', borderRadius: '0.5rem' }}>
+                                    <Card className='rounded-lg'>
                                         <Text>
-                                            {product.CongDung}
+                                            Quy cách đóng gói: {product.QCDongGoi}
+                                        </Text>
+                                        <br />
+                                        <Text>
+                                            Dạng bào chế: {product.DangBaoChe}
+                                        </Text>
+                                        <br />
+                                        <Text>
+                                            Công dụng:
+                                        </Text>
+                                        <br />
+                                        <Text
+                                            className="pl-4"
+                                        >
+                                            - {product.CongDung}
                                         </Text>
                                     </Card>
                                 </TabPane>
-                                
+
                             </Tabs>
                         </div>
                     </div>
                 </Card>
 
                 {/* Related Products */}
-                <div className="mt-12">
-                    <Title level={3} style={{ color: '#ef2957', marginBottom: '1.5rem' }}>Sản phẩm liên quan</Title>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                        {[...Array(5)].map((_, i) => (
-                            <Card
-                                key={i}
-                                hoverable
-                                cover={
-                                    <img
-                                        alt={`Related product ${i + 1}`}
-                                        src="/placeholder.svg"
-                                        style={{ height: '200px', objectFit: 'cover' }}
-                                    />
-                                }
-                                style={{ backgroundColor: '#fff', borderRadius: '0.5rem', overflow: 'hidden' }}
-                            >
-                                <Card.Meta
-                                    title={<Text strong>KitCat Complete Cuisine Pate</Text>}
-                                    description={<Text type="danger">21,000₫</Text>}
-                                />
-                            </Card>
-                        ))}
+                <div className="mt-12 ">
+                    <div
+                        level={3}
+                        className="text-2xl font-bold font-serif tracking-wide text-[#ef2957] mb-8">
+                        <span>Sản phẩm liên quan</span>
                     </div>
+                    {/* <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                        {listProduct.length > 0 && listProduct.map((product) => (
+                            <div key={product.MaThuoc} className="border rounded-lg overflow-hidden group flex flex-col" onClick={() => handleProductClick(product.MaThuoc)}>
+                                <div className="relative">
+                                    <img
+                                        src={product.AnhDaiDien}
+                                        alt={product.TenThuoc}
+                                        className="w-full h-64 object-cover"
+                                    />
+                                    {product.TrangThai === "Tạm hết hàng" && (
+                                        <span className="absolute top-2 right-2 bg-gray-800 text-white px-2 py-1 text-sm rounded">
+                                            Tạm hết hàng
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="p-4 flex flex-col flex-1 justify-between">
+                                    <a href='#'>
+                                        <h3 className="text-sm font-medium mb-2 line-clamp-2 group-hover:text-red-600">
+                                            {product.TenThuoc}
+                                        </h3>
+                                    </a>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-lg font-bold">{product.GiaBan.toLocaleString()}₫</span>
+                                    </div>
+                                    {product.TrangThai === "Còn hàng" ? (
+                                        <button className="mt-4 w-full rounded-md bg-orange-500 py-2 text-sm font-semibold text-white hover:bg-orange-600">
+                                            CHỌN MUA
+                                        </button>
+                                    ) : (
+                                        <button className="w-full mt-4 px-4 py-2 bg-gray-200 text-gray-500 rounded cursor-not-allowed">
+                                            TẠM HẾT HÀNG
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                            
+                        ))}
+                    </div> */}
+
+                    <Carousel
+                        arrows
+                        slidesPerRow={4}
+                        infinite={false}
+                        dots={false}
+                        rows={1}
+                        // autoplay={true}
+                        className='flex justify-center items-center overflow-hidden'
+                        prevArrow={
+                            <div className='flex justify-center bg-[#ef2957] w-50 h-50'>
+                                <IoArrowBackCircleOutline size={30} className='text-[#ef2957]' />
+                            </div>
+                        }
+                        nextArrow={
+                            <div className='flex bg-[#ef2957] w-50 h-50'>
+                                <IoArrowForwardCircleOutline size={25} className='text-[#ef2957]' />
+                            </div>
+                        }
+
+                    >
+                        {listProduct.length > 0 && listProduct.map((product) => (
+                            <div key={product.MaThuoc} className="max-w-[23%] border mx-2 rounded-lg overflow-hidden group flex flex-col" onClick={() => handleProductClick(product.MaThuoc)}>
+                                <div className="">
+                                    <img
+                                        src={product.AnhDaiDien}
+                                        alt={product.TenThuoc}
+                                        className="w-full h-64 object-cover"
+                                    />
+                                </div>
+                                <div className="p-4 flex flex-col flex-1 justify-between">
+                                    <a href='#'>
+                                        <h3 className="text-sm font-medium mb-2 line-clamp-2 group-hover:text-red-600">
+                                            {product.TenThuoc}
+                                        </h3>
+                                    </a>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-lg font-bold">{product.GiaBan.toLocaleString()}₫</span>
+                                    </div>
+                                    {product.TrangThai === "Còn hàng" ? (
+                                        <button className="mt-4 w-full rounded-md bg-orange-500 py-2 text-sm font-semibold text-white hover:bg-orange-600">
+                                            CHỌN MUA
+                                        </button>
+                                    ) : (
+                                        <button className="w-full mt-4 px-4 py-2 bg-gray-200 text-gray-500 rounded cursor-not-allowed">
+                                            TẠM HẾT HÀNG
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                        ))}
+                    </Carousel>
+
                 </div>
 
                 {/* Recently Viewed */}
                 <div className="mt-12">
-                    <Title level={3} style={{ color: '#ef2957', marginBottom: '1.5rem' }}>Sản phẩm đã xem</Title>
+                    <div
+                        level={3}
+                        className="text-2xl font-bold font-serif tracking-wide text-[#ef2957] mb-8">
+                        <span>Sản phẩm đã xem</span>
+                    </div>
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                         {[...Array(5)].map((_, i) => (
                             <Card

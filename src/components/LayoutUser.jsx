@@ -30,7 +30,7 @@ const LayoutUser = () => {
         };
 
         getCart();
-    });
+    }, [userinfo]);
 
     const handleLogout = async () => {
         localStorage.removeItem('accessToken');
