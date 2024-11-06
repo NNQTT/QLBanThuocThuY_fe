@@ -21,7 +21,7 @@ function Home() {
     const fetchProducts = async () => {
       try {
         const response = await axios.get('http://localhost:3000/product/getproducts');
-        setListProduct(response.data);
+        setListProduct(response.data.products);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -79,7 +79,7 @@ function Home() {
             <div key={product.MaThuoc} className="border rounded-lg overflow-hidden group flex flex-col" onClick={() => handleProductClick(product.MaThuoc)}>
               <div className="relative">
                 <img
-                  src={product.AnhDaiDien}
+                  src={`${import.meta.env.BASE_URL}src/assets/uploads/${product.MaThuoc}/${product.AnhDaiDien}`}
                   alt={product.TenThuoc}
                   className="w-full h-64 object-cover"
                 />
@@ -91,7 +91,7 @@ function Home() {
               </div>
               <div className="p-4 flex flex-col flex-1 justify-between">
                 <a href='#'>
-                  <h3 className="text-sm font-medium mb-2 line-clamp-2 group-hover:text-red-600">
+                  <h3 className="text-lg font-medium mb-2 line-clamp-2 group-hover:text-red-600">
                     {product.TenThuoc}
                   </h3>
                 </a>

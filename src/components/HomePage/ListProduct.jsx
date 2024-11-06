@@ -9,7 +9,9 @@ const ListProduct = () => {
   const [sortBy, setSortBy] = useState('default');
   const [listProduct, setListProduct] = useState([]);
   const navigate = useNavigate();
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 12;
 
   const navItems = [
     { name: 'MUA ĐỒ CHO CHÓ', href: '#' },
@@ -19,18 +21,30 @@ const ListProduct = () => {
     { name: 'KHUYẾN MÃI', href: '#' },
   ];
 
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/product/getproducts');
-        setListProduct(response.data);
+        const response = await axios.get('http://localhost:3000/product/getproducts', {
+          params: {
+            page: currentPage,
+            pagesize: pageSize,
+          }
+        });
+        setListProduct(response.data.products);
+        setTotalPages(Math.ceil(response.data.totalProducts / pageSize));
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [currentPage]);
 
   const handleProductClick = (productId) => {
     navigate(`/productdetail/${productId}`);
@@ -124,7 +138,7 @@ const ListProduct = () => {
           <div key={product.MaThuoc} className="border rounded-lg overflow-hidden group flex flex-col" onClick={() => handleProductClick(product.MaThuoc)}>
             <div className="relative">
               <img
-                src={product.AnhDaiDien}
+                src={`${import.meta.env.BASE_URL}src/assets/uploads/${product.MaThuoc}/${product.AnhDaiDien}`}
                 alt={product.TenThuoc}
                 className="w-full h-64 object-cover"
               />
@@ -135,8 +149,8 @@ const ListProduct = () => {
               )}
             </div>
             <div className="p-4 flex flex-col flex-1 justify-between">
-              <a href = '#'>
-                <h3 className="text-sm font-medium mb-2 line-clamp-2 group-hover:text-red-600">
+              <a href='#'>
+                <h3 className="text-lg font-medium mb-2 line-clamp-2 group-hover:text-red-600">
                   {product.TenThuoc}
                 </h3>
               </a>
@@ -155,6 +169,37 @@ const ListProduct = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center items-center mt-8 space-x-4">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-4 py-2 bg-orange-500 rounded-md hover:bg-orange-600 disabled:opacity-50"
+        >
+          &laquo;
+        </button>
+        {Array.from({ length: totalPages }, (_, index) => {
+          const page = index + 1;
+          return (
+            <button
+              key={page}
+              onClick={() => handlePageChange(page)}
+              className={`px-4 py-2 rounded-md ${currentPage === page ? 'bg-orange-600 text-white' : 'bg-orange-500 hover:bg-orange-600'
+                }`}
+            >
+              {page}
+            </button>
+          );
+        })}
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 bg-orange-500 rounded-md hover:bg-orange-600 disabled:opacity-50"
+        >
+          &raquo;
+        </button>
       </div>
     </div>
   );
