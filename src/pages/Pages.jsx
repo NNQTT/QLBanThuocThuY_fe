@@ -12,6 +12,7 @@ import Cart from '../components/Cart/Cart';
 import OrderList from '../components/Admin/OrderList';
 import AddProduct from '../components/Admin/AddProduct';
 import ListProduct from '../components/HomePage/ListProduct';
+import Checkout from '../components/Cart/Checkout';
 
 
 function Pages() {
@@ -33,6 +34,7 @@ function Pages() {
                 </Route>
                 <Route path='/adminlogin' element={<LoginAdmin />}>
                 </Route>
+                <Route path='/checkout' element={<Checkout />}></Route>
             </Routes>
 
         </>
