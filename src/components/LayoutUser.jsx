@@ -29,7 +29,7 @@ const LayoutUser = ({ onSearchResults }) => {
         };
 
         getCart();
-    });
+    }, [userinfo]);
 
     const handleLogout = async () => {
         localStorage.removeItem('accessToken');

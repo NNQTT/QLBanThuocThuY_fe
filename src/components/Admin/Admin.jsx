@@ -1,31 +1,36 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 import { Search, ChevronLeft, ChevronRight, Eye, Edit, Filter, RefreshCcw, ChevronDown } from 'lucide-react'
 
 const Admin = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
-    const [medicinesPerPage] = useState(6)
-    const [sortColumn, setSortColumn] = useState('code')
+    const [productsPerPage] = useState(6)
+    const [sortColumn, setSortColumn] = useState('MaThuoc')
     const [sortDirection, setSortDirection] = useState('asc')
+    const [products, setProducts] = useState([])
+    const [loading, setLoading] = useState(true)
 
-    const medicines = [
-        { code: 'MED001', name: 'Paracetamol', price: '50,000 ₫', quantity: 100, status: 'Còn hàng' },
-        { code: 'MED002', name: 'Amoxicillin', price: '75,000 ₫', quantity: 50, status: 'Còn hàng' },
-        { code: 'MED003', name: 'Omeprazole', price: '100,000 ₫', quantity: 0, status: 'Tạm hết hàng' },
-        { code: 'MED004', name: 'Lisinopril', price: '120,000 ₫', quantity: 75, status: 'Còn hàng' },
-        { code: 'MED005', name: 'Metformin', price: '80,000 ₫', quantity: 25, status: 'Sắp hết hàng' },
-        { code: 'MED006', name: 'Atorvastatin', price: '150,000 ₫', quantity: 60, status: 'Còn hàng' },
-        { code: 'MED007', name: 'Amlodipine', price: '90,000 ₫', quantity: 40, status: 'Còn hàng' },
-        { code: 'MED008', name: 'Metoprolol', price: '110,000 ₫', quantity: 0, status: 'Hết hàng' },
-        { code: 'MED009', name: 'Gabapentin', price: '130,000 ₫', quantity: 30, status: 'Còn hàng' },
-        { code: 'MED010', name: 'Sertraline', price: '140,000 ₫', quantity: 20, status: 'Sắp hết hàng' },
-    ]
+    // Fetch data from API
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/admin/getthuoc')
+                setProducts(response.data)
+            } catch (error) {
+                console.error("Error fetching products data:", error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchProducts()
+    }, [])
 
-    // Filter and sort medicines
-    const filteredAndSortedMedicines = medicines
-        .filter(medicine =>
-            medicine.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            medicine.name.toLowerCase().includes(searchTerm.toLowerCase())
+    // Filter and sort products
+    const filteredAndSortedProducts = products
+        .filter(product =>
+            product.MaThuoc.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.TenThuoc.toLowerCase().includes(searchTerm.toLowerCase())
         )
         .sort((a, b) => {
             if (a[sortColumn] < b[sortColumn]) return sortDirection === 'asc' ? -1 : 1
@@ -34,9 +39,9 @@ const Admin = () => {
         })
 
     // Pagination logic
-    const indexOfLastMedicine = currentPage * medicinesPerPage
-    const indexOfFirstMedicine = indexOfLastMedicine - medicinesPerPage
-    const currentMedicines = filteredAndSortedMedicines.slice(indexOfFirstMedicine, indexOfLastMedicine)
+    const indexOfLastProduct = currentPage * productsPerPage
+    const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+    const currentProducts = filteredAndSortedProducts.slice(indexOfFirstProduct, indexOfLastProduct)
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber)
 
@@ -53,6 +58,10 @@ const Admin = () => {
         'Còn hàng': 'bg-green-100 text-green-800 border-green-300',
         'Sắp hết hàng': 'bg-yellow-100 text-yellow-800 border-yellow-300',
         'Tạm hết hàng': 'bg-red-100 text-red-800 border-red-300',
+    }
+
+    if (loading) {
+        return <div className="text-center py-4">Loading...</div>
     }
 
     return (
@@ -84,17 +93,17 @@ const Admin = () => {
                 <table className="w-full">
                     <thead className="bg-[#FFE5D9] text-[#4A4E69]">
                         <tr>
-                            {['code', 'name', 'price', 'quantity', 'status'].map((column) => (
+                            {['MaThuoc', 'TenThuoc', 'GiaBan', 'SoLuong', 'TrangThai'].map((column) => (
                                 <th
                                     key={column}
                                     className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider cursor-pointer hover:bg-[#FFD6BA] transition-colors duration-200"
                                     onClick={() => handleSort(column)}
                                 >
                                     <div className="flex items-center">
-                                        {column === 'code' ? 'Mã thuốc' :
-                                            column === 'name' ? 'Tên thuốc' :
-                                                column === 'price' ? 'Giá bán' :
-                                                    column === 'quantity' ? 'Số lượng' : 'Trạng thái'}
+                                        {column === 'MaThuoc' ? 'Mã thuốc' :
+                                            column === 'TenThuoc' ? 'Tên thuốc' :
+                                                column === 'GiaBan' ? 'Giá bán' :
+                                                    column === 'SoLuong' ? 'Số lượng' : 'Trạng thái'}
                                         <ChevronDown
                                             size={16}
                                             className={`ml-1 transform transition-transform duration-200 ${sortColumn === column && sortDirection === 'desc' ? 'rotate-180' : ''
@@ -107,15 +116,15 @@ const Admin = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {currentMedicines.map((medicine) => (
-                            <tr key={medicine.code} className="hover:bg-gray-50 transition-colors duration-150 ease-in-out">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#22223B]">{medicine.code}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4A4E69]">{medicine.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4A4E69]">{medicine.price}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4A4E69]">{medicine.quantity}</td>
+                        {currentProducts.map((product) => (
+                            <tr key={product.MaThuoc} className="hover:bg-gray-50 transition-colors duration-150 ease-in-out">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#22223B]">{product.MaThuoc}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4A4E69]">{product.TenThuoc}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4A4E69]">{product.GiaBan}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4A4E69]">{product.SoLuong}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${statusColors[medicine.status]}`}>
-                                        {medicine.status}
+                                    <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${statusColors[product.TrangThai]}`}>
+                                        {product.TrangThai}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -144,55 +153,36 @@ const Admin = () => {
                     </button>
                     <button
                         onClick={() => paginate(currentPage + 1)}
-                        disabled={indexOfLastMedicine >= filteredAndSortedMedicines.length}
+                        disabled={indexOfLastProduct >= filteredAndSortedProducts.length}
                         className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
                     >
                         Sau
                     </button>
                 </div>
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div>
-                        <p className="text-sm text-gray-700">
-                            Hiển thị <span className="font-medium">{indexOfFirstMedicine + 1}</span> đến <span className="font-medium">{Math.min(indexOfLastMedicine, filteredAndSortedMedicines.length)}</span> trong số{' '}
-                            <span className="font-medium">{filteredAndSortedMedicines.length}</span> thuốc
-                        </p>
-                    </div>
-                    <div>
-                        <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                            <button
-                                onClick={() => paginate(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors duration-200"
-                            >
-                                <span className="sr-only">Trang trước</span>
-                                <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                            </button>
-                            {[...Array(Math.ceil(filteredAndSortedMedicines.length / medicinesPerPage)).keys()].map((number) => (
-                                <button
-                                    key={number + 1}
-                                    onClick={() => paginate(number + 1)}
-                                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === number + 1
-                                            ? 'z-10 bg-[#E76F51] border-[#E76F51] text-white'
-                                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                        } transition-colors duration-200`}
-                                >
-                                    {number + 1}
-                                </button>
-                            ))}
-                            <button
-                                onClick={() => paginate(currentPage + 1)}
-                                disabled={indexOfLastMedicine >= filteredAndSortedMedicines.length}
-                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors duration-200"
-                            >
-                                <span className="sr-only">Trang sau</span>
-                                <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                            </button>
-                        </nav>
-                    </div>
+                    <p className="text-sm text-gray-700">
+                        Hiển thị <span className="font-medium">{indexOfFirstProduct + 1}</span> đến <span className="font-medium">{Math.min(indexOfLastProduct, filteredAndSortedProducts.length)}</span> trong số <span className="font-medium">{filteredAndSortedProducts.length}</span> sản phẩm
+                    </p>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button
+                            onClick={() => paginate(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors duration-200"
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
+                        <button
+                            onClick={() => paginate(currentPage + 1)}
+                            disabled={indexOfLastProduct >= filteredAndSortedProducts.length}
+                            className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors duration-200"
+                        >
+                            <ChevronRight size={20} />
+                        </button>
+                    </nav>
                 </div>
             </div>
         </div>
     )
 }
 
-export default Admin;
+export default Admin
