@@ -4,7 +4,7 @@ import banner from '../../assets/banner.jpg'
 import { FaHome } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 
-function Home() {
+function Home({ searchResults }) {
   const [listProduct, setListProduct] = useState([]);
   const [visibleCount, setVisibleCount] = useState(8);
   const navigate = useNavigate();
@@ -18,21 +18,25 @@ function Home() {
   ];
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/product/getproducts');
-        setListProduct(response.data.products);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchProducts();
-  }, []);
+    if (!searchResults || !searchResults.length) {
+      const fetchProducts = async () => {
+        try {
+          const response = await axios.get('http://localhost:3000/product/getproducts');
+          setListProduct(response.data.products);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+      fetchProducts();
+    }
+  }, [searchResults]);
 
   const handleProductClick = (productId) => {
     navigate(`/productdetail/${productId}`);
   };
+
+  const displayProducts = (searchResults && searchResults.length) ? searchResults : listProduct;
+  console.log("search result:", searchResults);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -75,7 +79,7 @@ function Home() {
           <h2 className="text-2xl font-bold">SẢN PHẨM</h2>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {listProduct.slice(0, visibleCount).map((product) => (
+          {displayProducts.slice(0, visibleCount).map((product) => (
             <div key={product.MaThuoc} className="border rounded-lg overflow-hidden group flex flex-col" onClick={() => handleProductClick(product.MaThuoc)}>
               <div className="relative">
                 <img

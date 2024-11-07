@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LayoutUser from '../components/LayoutUser';
 import Home from '../components/HomePage/Home';
@@ -16,11 +16,12 @@ import Checkout from '../components/Cart/Checkout';
 
 
 function Pages() {
+    const [searchResults, setSearchResults] = useState([]);
     return (
         <>
             <Routes>
-                <Route path='/' element={<LayoutUser />}>
-                    <Route index element={<Home />} />
+                <Route path='/' element={<LayoutUser onSearchResults={(results) => setSearchResults(results)} />}>
+                    <Route index element={<Home searchResults={searchResults} />} />
                     <Route path='/productdetail/:productId' element={<ProductDetail />} />
                     <Route path='/cart/' element={<Cart />}></Route>
                     <Route path='/listproduct' element={<ListProduct />}></Route>
