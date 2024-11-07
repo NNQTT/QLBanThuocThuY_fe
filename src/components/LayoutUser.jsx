@@ -7,12 +7,11 @@ import { DownOutlined } from '@ant-design/icons';
 
 import { Dropdown, Menu as AntdMenu, Space, message } from 'antd';
 
-const LayoutUser = () => {
+const LayoutUser = ({ onSearchResults }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
     const [userinfo, setUserInfo] = useState(null);
-
     const [cart, setCart] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const getCart = async () => {
@@ -46,6 +45,22 @@ const LayoutUser = () => {
             }
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const handleSearch = async (e) => {
+        setSearchTerm(e.target.value);
+        if (e.target.value) {
+            try {
+                const res = await axios.get(`http://localhost:3000/product/getproductsbyname`, {
+                    params: { query: e.target.value }
+                });
+                onSearchResults(res.data);
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        } else {
+            onSearchResults([]);
         }
     };
 
@@ -148,6 +163,8 @@ const LayoutUser = () => {
                                 <input
                                     type="text"
                                     placeholder="Tìm kiếm sản phẩm..."
+                                    value={searchTerm}
+                                    onChange={handleSearch} 
                                     className="bg-white bg-opacity-20 text-[#4A3228] placeholder-black-300 rounded-full py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-[#F4A261] focus:bg-opacity-30 transition duration-300 ease-in-out w-64"
                                 />
                                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-[#4A3228] group-hover:text-[#FF7F50] transition duration-300 ease-in-out" />
