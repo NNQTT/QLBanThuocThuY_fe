@@ -1,27 +1,64 @@
-import React, { useState, useRef, useEffect } from 'react'; 
-import { PlusCircle, X, Check, ChevronsUpDown, Search } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+import { PlusCircle, X, Check, ChevronsUpDown, Search, Upload, User } from 'lucide-react';
 
 const AddProduct = () => {
   const [ingredients, setIngredients] = useState([]);
   const [openIngredients, setOpenIngredients] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [newIngredient, setNewIngredient] = useState('');
-  const [ingredientsList] = useState([
-    { value: "paracetamol", label: "Paracetamol" },
-    { value: "ibuprofen", label: "Ibuprofen" },
-    { value: "aspirin", label: "Aspirin" },
-    { value: "amoxicillin", label: "Amoxicillin" },
-    { value: "omeprazole", label: "Omeprazole" },
-  ]);
+  const [ingredientsList, setIngredientsList] = useState([]);
+  const [nhomThuocList, setNhomThuocList] = useState([]);
+  const [loaiSuDungList, setLoaiSuDungList] = useState([]);
+  const [profilePicture, setProfilePicture] = useState(null)
+  const [selectedFiles, setSelectedFiles] = useState([])
+
+  const handleProfilePictureChange = (event) => {
+    if (event.target.files && event.target.files[0]) {
+      setProfilePicture(event.target.files[0])
+    }
+  }
+
+  const handleGalleryChange = (event) => {
+    if (event.target.files) {
+      setSelectedFiles(Array.from(event.target.files))
+    }
+  }
 
   const dropdownRef = useRef(null);
 
+
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpenIngredients(false);
+    const fetchData = async () => {
+      try {
+        const [ingredientsRes, nhomThuocRes, loaiSuDungRes] = await Promise.all([
+          axios.get('http://localhost:3000/admin/getthanhphan'),
+          axios.get('http://localhost:3000/admin/getnhomthuoc'),
+          axios.get('http://localhost:3000/admin/getloaisudung'),
+        ]);
+
+
+        setIngredientsList(ingredientsRes.data.map(item => ({
+          value: item.MaTP,
+          label: item.TenThanhPhan
+        })));
+
+        setNhomThuocList(nhomThuocRes.data.map(item => ({
+          value: item.MaNhomThuoc,
+          label: item.TenNhom
+        })));
+
+        setLoaiSuDungList(loaiSuDungRes.data.map(item => ({
+          value: item.MaLoai,
+          label: item.TenLoai
+        })));
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
     };
+
+    fetchData();
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
@@ -29,9 +66,6 @@ const AddProduct = () => {
     };
   }, []);
 
-  const filteredIngredients = ingredientsList.filter(ingredient =>
-    ingredient.label.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const toggleIngredient = (value) => {
     setIngredients(prev =>
@@ -41,19 +75,49 @@ const AddProduct = () => {
     );
   };
 
-  const addNewIngredient = () => {
+  const addNewIngredient = async () => {
     if (newIngredient.trim() !== '') {
-      const newValue = newIngredient.toLowerCase().replace(/\s+/g, '-');
-      setIngredientsList(prev => [...prev, { value: newValue, label: newIngredient }]);
-      setIngredients(prev => [...prev, newValue]);
-      setNewIngredient('');
+      try {
+        const response = await axios.post('http://localhost:3000/admin/postthanhphan', {
+          label: newIngredient,
+        });
+        setIngredientsList(prev => [...prev, { value: response.data.MaTP, label: response.data.TenThanhPhan }]);
+        setIngredients(prev => [...prev, response.data.MaTP]);
+        setNewIngredient('');
+      } catch (error) {
+        console.error('Error adding ingredient:', error);
+      }
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const productData = {
+      // Lấy dữ liệu từ form và các state khác để tạo đối tượng productData
+    };
+    try {
+      await axios.post('http://localhost:3000/admin/postthuoc', productData);
+      alert('Sản phẩm đã được thêm thành công!');
+    } catch (error) {
+      console.error('Error adding product:', error);
+    }
+  };
+
+  const filteredIngredients = ingredientsList.filter(ingredient =>
+    ingredient.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleClickOutside = (event) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setOpenIngredients(false);
+    }
+  };
+
+
   return (
-    <div className="bg-white mx-10 p-8 rounded-lg shadow-md transition-all duration-300 ease-in-out">
+    <div className="bg-background mx-auto max-w-4xl p-6 rounded-lg shadow-md">
       <h2 className="text-3xl font-bold text-[#22223B] mb-6">Thêm sản phẩm mới</h2>
-      <form className="space-y-6">
+      <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="maThuoc" className="block text-sm font-medium text-[#4A4E69] mb-1">Mã thuốc</label>
@@ -79,18 +143,18 @@ const AddProduct = () => {
             <label htmlFor="nhomThuoc" className="block text-sm font-medium text-[#4A4E69] mb-1">Nhóm thuốc</label>
             <select id="nhomThuoc" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white">
               <option value="">Chọn nhóm thuốc</option>
-              <option value="NT001">Thuốc kháng sinh</option>
-              <option value="NT002">Thuốc giảm đau</option>
-              <option value="NT003">Thuốc tiêu hóa</option>
+              {nhomThuocList.map((item) => (
+                <option key={item.value} value={item.value}>{item.label}</option>
+              ))}
             </select>
           </div>
           <div>
             <label htmlFor="loaiSuDung" className="block text-sm font-medium text-[#4A4E69] mb-1">Loại sử dụng</label>
             <select id="loaiSuDung" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white">
               <option value="">Chọn loại sử dụng</option>
-              <option value="LSD001">Uống</option>
-              <option value="LSD002">Tiêm</option>
-              <option value="LSD003">Bôi ngoài da</option>
+              {loaiSuDungList.map((item) => (
+                <option key={item.value} value={item.value}>{item.label}</option>
+              ))}
             </select>
           </div>
           <div>
@@ -98,7 +162,6 @@ const AddProduct = () => {
             <select id="trangThai" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white">
               <option value="">Chọn trạng thái</option>
               <option value="active">Còn hàng</option>
-              <option value="lowStock">Sắp hết hàng</option>
               <option value="outOfStock">Hết hàng</option>
             </select>
           </div>
@@ -109,16 +172,11 @@ const AddProduct = () => {
           <textarea id="congDung" placeholder="Nhập công dụng của thuốc" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] h-24"></textarea>
         </div>
 
+
         <div className="relative" ref={dropdownRef}>
           <label className="block text-sm font-medium text-[#4A4E69] mb-1">Thành phần</label>
-          <button
-            type="button"
-            onClick={() => setOpenIngredients(!openIngredients)}
-            className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white text-left flex justify-between items-center"
-          >
-            {ingredients.length > 0
-              ? `${ingredients.length} thành phần đã chọn`
-              : "Chọn thành phần"}
+          <button type="button" onClick={() => setOpenIngredients(!openIngredients)} className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white text-left flex justify-between items-center">
+            {ingredients.length > 0 ? `${ingredients.length} thành phần đã chọn` : "Chọn thành phần"}
             <ChevronsUpDown className="h-4 w-4 text-gray-400" />
           </button>
           {openIngredients && (
@@ -142,11 +200,7 @@ const AddProduct = () => {
                     className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
                     onClick={() => toggleIngredient(ingredient.value)}
                   >
-                    <Check
-                      className={`mr-2 h-4 w-4 ${
-                        ingredients.includes(ingredient.value) ? 'text-[#E76F51]' : 'text-transparent'
-                      }`}
-                    />
+                    <Check className={`mr-2 h-4 w-4 ${ingredients.includes(ingredient.value) ? 'text-[#E76F51]' : 'text-transparent'}`} />
                     {ingredient.label}
                   </li>
                 ))}
@@ -172,7 +226,6 @@ const AddProduct = () => {
             </div>
           )}
         </div>
-        
         {ingredients.length > 0 && (
           <div className="mt-2">
             <h4 className="font-medium text-sm text-[#4A4E69] mb-1">Thành phần đã chọn:</h4>
@@ -196,16 +249,90 @@ const AddProduct = () => {
           </div>
         )}
 
-        <div>
-          <label htmlFor="anhDaiDien" className="block text-sm font-medium text-[#4A4E69] mb-1">Ảnh đại diện</label>
-          <input id="anhDaiDien" type="file" accept="image/*" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51]" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="anhDaiDien" className="block text-sm font-medium text-[#4A4E69] mb-2">
+              Ảnh đại diện
+            </label>
+            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-[#E76F51] border-dashed rounded-md">
+              <div className="space-y-1 text-center">
+                <User className="mx-auto h-12 w-12 text-[#E76F51]" />
+                <div className="flex text-sm text-gray-600">
+                  <label
+                    htmlFor="anhDaiDien"
+                    className="relative cursor-pointer bg-white rounded-md font-medium text-[#E76F51] hover:text-[#E76F51] focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-[#E76F51]"
+                  >
+                    <span>Tải lên ảnh</span>
+                    <input
+                      id="anhDaiDien"
+                      name="anhDaiDien"
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={handleProfilePictureChange}
+                    />
+                  </label>
+                  <p className="pl-1">hoặc kéo và thả</p>
+                </div>
+                <p className="text-xs text-gray-500">PNG, JPG, GIF tối đa 2MB</p>
+              </div>
+            </div>
+            {profilePicture && (
+              <p className="mt-2 text-sm text-gray-600">
+                Đã chọn: {profilePicture.name}
+              </p>
+            )}
+          </div>
+
+
+          <div>
+            <label
+              htmlFor="danhMucHinhAnh"
+              className="block text-sm font-medium text-[#4A4E69] mb-2"
+            >
+              Danh mục hình ảnh
+            </label>
+            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-[#E76F51] border-dashed rounded-md">
+              <div className="space-y-1 text-center">
+                <Upload className="mx-auto h-12 w-12 text-[#E76F51]" />
+                <div className="flex text-sm text-gray-600">
+                  <label
+                    htmlFor="danhMucHinhAnh"
+                    className="relative cursor-pointer bg-white rounded-md font-medium text-[#E76F51] hover:text-[#E76F51] focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-[#E76F51]"
+                  >
+                    <span>Tải lên nhiều hình ảnh</span>
+                    <input
+                      id="danhMucHinhAnh"
+                      name="danhMucHinhAnh"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="sr-only"
+                      onChange={handleGalleryChange}
+                    />
+                  </label>
+                  <p className="pl-1">hoặc kéo và thả</p>
+                </div>
+                <p className="text-xs text-gray-500">PNG, JPG, GIF lên đến 10MB</p>
+              </div>
+            </div>
+            {selectedFiles.length > 0 && (
+              <div className="mt-2">
+                <h4 className="text-sm font-medium text-[#4A4E69]">Đã chọn {selectedFiles.length} hình ảnh:</h4>
+                <ul className="mt-1 text-sm text-gray-600">
+                  {selectedFiles.slice(0, 3).map((file, index) => (
+                    <li key={index} className="truncate">{file.name}</li>
+                  ))}
+                  {selectedFiles.length > 3 && (
+                    <li>...và {selectedFiles.length - 3} hình ảnh khác</li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="danhMucHinhAnh" className="text-[#4A4E69]">Danh mục hình ảnh</Label>
-          <Input id="danhMucHinhAnh" type="file" accept="image/*" multiple className="mt-1 border-[#E76F51] focus:ring-[#E76F51]" />
-        </div>
-        
+
         <button type="submit" className="w-full bg-[#E76F51] hover:bg-[#F4A261] text-white font-bold py-2 px-4 rounded transition-colors duration-200">
           Thêm sản phẩm
         </button>
