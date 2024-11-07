@@ -4,39 +4,34 @@ import banner from '../../assets/banner.jpg'
 import { FaHome } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 
-function Home({ searchResults }) {
+function Home() {
   const [listProduct, setListProduct] = useState([]);
   const [visibleCount, setVisibleCount] = useState(8);
   const navigate = useNavigate();
 
   const navItems = [
-    { name: 'MUA ĐỒ CHO CHÓ', href: '#' },
-    { name: 'MUA ĐỒ CHO MÈO', href: '#' },
-    { name: 'PETTAG MOZZI', href: '#' },
-    { name: 'DỊCH VỤ SPA', href: '#' },
-    { name: 'KHUYẾN MÃI', href: '#' },
+    { name: 'CHẾ PHẨM SINH HỌC', group: 'N1' },
+    { name: 'DƯỢC PHẨM', group: 'N2' },
+    { name: 'VACCINE', group: 'N3' },
+    { name: 'HÓA CHẤT THÚ Y', group: 'N4' },
+    { name: 'VI SINH VẬT', group: 'N5' },
   ];
 
   useEffect(() => {
-    if (!searchResults || !searchResults.length) {
-      const fetchProducts = async () => {
-        try {
-          const response = await axios.get('http://localhost:3000/product/getproducts');
-          setListProduct(response.data.products);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      };
-      fetchProducts();
-    }
-  }, [searchResults]);
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/product/getproducts');
+        setListProduct(response.data.products);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchProducts();
+  },);
 
   const handleProductClick = (productId) => {
     navigate(`/productdetail/${productId}`);
   };
-
-  const displayProducts = (searchResults && searchResults.length) ? searchResults : listProduct;
-  console.log("search result:", searchResults);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -52,7 +47,7 @@ function Home({ searchResults }) {
           {navItems.map((item) => (
             <li key={item.id} className='border border-gray-300 rounded-md px-8 hover:border-red-600 text-center flex-1'>
               <a
-                href={item.href}
+                href="#"
                 className="inline-block px-4 py-2 text-sm hover:text-red-600 transition-colors"
               >
                 {item.name}
@@ -79,7 +74,7 @@ function Home({ searchResults }) {
           <h2 className="text-2xl font-bold">SẢN PHẨM</h2>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {displayProducts.slice(0, visibleCount).map((product) => (
+          {listProduct.slice(0, visibleCount).map((product) => (
             <div key={product.MaThuoc} className="border rounded-lg overflow-hidden group flex flex-col" onClick={() => handleProductClick(product.MaThuoc)}>
               <div className="relative">
                 <img
