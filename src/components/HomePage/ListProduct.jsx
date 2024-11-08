@@ -4,21 +4,22 @@ import { FaHome } from "react-icons/fa";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const ListProduct = () => {
+const ListProduct = ({ searchResults, setSearchResults, searchTerm }) => {
   const [priceFilter, setPriceFilter] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const [listProduct, setListProduct] = useState([]);
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [groupName, setGroupName] = useState('');
   const pageSize = 12;
 
   const navItems = [
-    { name: 'MUA ĐỒ CHO CHÓ', href: '#' },
-    { name: 'MUA ĐỒ CHO MÈO', href: '#' },
-    { name: 'PETTAG MOZZI', href: '#' },
-    { name: 'DỊCH VỤ SPA', href: '#' },
-    { name: 'KHUYẾN MÃI', href: '#' },
+    { name: 'CHẾ PHẨM SINH HỌC', group: 'N1' },
+    { name: 'DƯỢC PHẨM', group: 'N2' },
+    { name: 'VACCINE', group: 'N3' },
+    { name: 'HÓA CHẤT THÚ Y', group: 'N4' },
+    { name: 'VI SINH VẬT', group: 'N5' },
   ];
 
   const handlePageChange = (page) => {
@@ -30,25 +31,57 @@ const ListProduct = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/product/getproducts', {
-          params: {
-            page: currentPage,
-            pagesize: pageSize,
-          }
-        });
-        setListProduct(response.data.products);
-        setTotalPages(Math.ceil(response.data.totalProducts / pageSize));
+        if (groupName) {
+          const response = await axios.get('http://localhost:3000/product/getproductsbygroup', {
+            params: { groupName }
+          });
+          setListProduct(response.data);
+          setTotalPages(Math.ceil(response.data.length / pageSize));
+        } else {
+          const response = await axios.get('http://localhost:3000/product/getproducts', {
+            params: {
+              page: currentPage,
+              pagesize: pageSize,
+            }
+          });
+          setListProduct(response.data.products);
+          setTotalPages(Math.ceil(response.data.totalProducts / pageSize));
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
-
     fetchProducts();
-  }, [currentPage]);
+
+  }, [groupName, searchResults, currentPage]);
 
   const handleProductClick = (productId) => {
     navigate(`/productdetail/${productId}`);
   };
+
+  const handleGroupClick = (group) => {
+    setGroupName(group);
+    setSearchResults([]);
+    setCurrentPage(1);
+  };
+
+  console.log("group: ", groupName);
+
+  const displayProducts = (searchResults && searchResults.length) ? searchResults : listProduct;
+
+  console.log("display product:", displayProducts);
+  console.log("search result:", searchResults);
+  console.log("search query:", searchTerm);
+
+  const groupTitleMap = {
+    N1: "CHẾ PHẨM SINH HỌC",
+    N2: "DƯỢC PHẨM",
+    N3: "VACCINE",
+    N4: "HÓA CHẤT THÚ Y",
+    N5: "VI SINH VẬT",
+  };
+
+  const currentGroupTitle = groupTitleMap[groupName] || 'Thuốc Thú Y';
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -62,10 +95,11 @@ const ListProduct = () => {
             </a>
           </li>
           {navItems.map((item) => (
-            <li key={item.id} className='border border-gray-300 rounded-md px-8 hover:border-red-600 text-center flex-1'>
+            <li key={item.id} className={`border rounded-md px-8 text-center flex-1 ${groupName === item.group && !searchResults.length ? 'bg-orange-500 text-white' : 'hover:border-red-600'}`}>
               <a
-                href={item.href}
-                className="inline-block px-4 py-2 text-sm hover:text-red-600 transition-colors"
+                href="#"
+                onClick={() => handleGroupClick(item.group)}
+                className={`inline-block px-4 py-2 text-sm ${groupName === item.group && !searchResults.length ? 'text-white' : 'hover:text-red-600'} transition-colors`}
               >
                 {item.name}
               </a>
@@ -80,61 +114,70 @@ const ListProduct = () => {
           Trang chủ
         </a>
         <span className="mx-2 text-gray-400">/</span>
-        <span className="text-gray-900">Thuốc Thú Y</span>
+        <span className="text-gray-900">{currentGroupTitle}</span>
       </div>
+
 
       {/* Header and Filters */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Thuốc Thú Y</h1>
+        {searchResults.length > 0 ? (
+          <span className="text-2xl text-gray-900">
+            Kết quả tìm kiếm cho <strong>"{searchTerm}"</strong>
+          </span>
+        ) : (
+        <>
+          <h1 className="text-2xl font-bold text-gray-900">{currentGroupTitle}</h1>
 
-        <div className="flex flex-wrap items-center gap-4">
-          {/* Filter Button */}
-          <div className="flex items-center gap-2 px-4 py-2 text-sm">
-            {<CiFilter size={24} />}
-            BỘ LỌC
-          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Filter Button */}
+            <div className="flex items-center gap-2 px-4 py-2 text-sm">
+              {<CiFilter size={24} />}
+              BỘ LỌC
+            </div>
 
-          {/* Price Filter */}
-          <div className="relative">
-            <select
-              value={priceFilter}
-              onChange={(e) => setPriceFilter(e.target.value)}
-              className="appearance-none w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-md pr-8 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            >
-              <option value="">Lọc giá</option>
-              <option value="low">Giá thấp đến cao</option>
-              <option value="high">Giá cao đến thấp</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-              <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
+            {/* Price Filter */}
+            <div className="relative">
+              <select
+                value={priceFilter}
+                onChange={(e) => setPriceFilter(e.target.value)}
+                className="appearance-none w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-md pr-8 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              >
+                <option value="">Lọc giá</option>
+                <option value="low">Giá thấp đến cao</option>
+                <option value="high">Giá cao đến thấp</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Sort */}
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="appearance-none w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-md pr-8 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              >
+                <option value="default">Sắp xếp</option>
+                <option value="1">Giá tăng dần</option>
+                <option value="-1">Giá giảm dần</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </div>
             </div>
           </div>
-
-          {/* Sort */}
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="appearance-none w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-md pr-8 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            >
-              <option value="default">Sắp xếp</option>
-              <option value="price-asc">Giá tăng dần</option>
-              <option value="price-desc">Giá giảm dần</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-              <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </div>
-          </div>
-        </div>
+        </>
+        )}
       </div>
 
       {/* Product Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {listProduct.map(product => (
+        {displayProducts.map(product => (
           <div key={product.MaThuoc} className="border rounded-lg overflow-hidden group flex flex-col" onClick={() => handleProductClick(product.MaThuoc)}>
             <div className="relative">
               <img

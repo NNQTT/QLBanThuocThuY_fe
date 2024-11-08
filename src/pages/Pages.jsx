@@ -17,14 +17,15 @@ import Checkout from '../components/Cart/Checkout';
 
 function Pages() {
     const [searchResults, setSearchResults] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     return (
         <>
             <Routes>
-                <Route path='/' element={<LayoutUser onSearchResults={(results) => setSearchResults(results)} />}>
-                    <Route index element={<Home searchResults={searchResults} />} />
+                <Route path='/' element={<LayoutUser onSearchResults={(results) => setSearchResults(results)} searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>}>
+                    <Route index element={<Home />} />
                     <Route path='/productdetail/:productId' element={<ProductDetail />} />
                     <Route path='/cart/' element={<Cart />}></Route>
-                    <Route path='/listproduct' element={<ListProduct />}></Route>
+                    <Route path='/listproduct' element={<ListProduct searchResults={searchResults} setSearchResults={setSearchResults} searchTerm={searchTerm}/>}></Route>
                 </Route>
                 <Route path='/login' element={<Login />}></Route>
                 <Route path='/register' element={<Register />}></Route>
