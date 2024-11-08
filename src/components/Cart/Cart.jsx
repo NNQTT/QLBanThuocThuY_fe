@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react'
 import { MinusIcon, PlusIcon, XIcon } from 'lucide-react'
 import axios from 'axios'
+import { Link } from 'react-router-dom'
 
 export default function Cart() {
 
     const [cart, setCart] = useState([])
+    const [totalQuantity, setTotalQuantity] = useState(0)
     const userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
 
     useEffect(() => {
@@ -28,7 +30,11 @@ export default function Cart() {
         }
 
         getCart()
-    },[])
+    }, [])
+
+    useEffect(() => {
+        setTotalQuantity(cart.reduce((acc, item) => acc + item.SoLuong, 0))
+    }, [cart])
 
     const removeItem = async (item) => {
         if (userInfo) {
@@ -87,7 +93,7 @@ export default function Cart() {
                                         <div className="flex gap-4">
                                             <div className="relative">
                                                 <img
-                                                    src="https://via.placeholder.com/100"
+                                                    src={`${import.meta.env.BASE_URL}src/assets/uploads/${item.MaThuoc}/${item.AnhDaiDien}`}
                                                     alt={item.TenThuoc}
                                                     className="w-20 h-20 object-cover rounded"
                                                 />
@@ -142,19 +148,21 @@ export default function Cart() {
                             <li>• Giao hàng hỏa tốc trong vòng 4 giờ, áp dụng tại khu vực nội thành Hồ Chí Minh</li>
                         </ul>
                         <hr className="my-5 h-0.5 border-t-1 bg-neutral-100 dark:bg-white/10" />
-                        <button className="w-full bg-[#FF9A76] text-[#2C1A12] py-2 rounded transition-all 
-        duration-300 
-        ease-in-out
-        hover:opacity-90 
-        hover:scale-105 
-        transform
-        focus:outline-none 
-        focus:ring-2 
-        focus:ring-[#FF9A76] 
-        focus:ring-opacity-50"
-                        >
-                            THANH TOÁN
-                        </button>
+                        <Link to='/checkout'>
+                            <button disabled={!totalQuantity} className="w-full bg-[#FF9A76] text-[#2C1A12] py-2 rounded transition-all 
+                                duration-300 
+                                ease-in-out
+                                hover:opacity-90 
+                                hover:scale-105 
+                                transform
+                                focus:outline-none 
+                                focus:ring-2 
+                                focus:ring-[#FF9A76] 
+                                focus:ring-opacity-50"
+                            >
+                                THANH TOÁN
+                            </button>
+                        </Link>
                     </div>
                 </div>
             </div>
