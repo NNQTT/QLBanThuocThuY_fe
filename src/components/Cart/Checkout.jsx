@@ -53,12 +53,18 @@ export default function Checkout() {
             if (selectedCity) {
                 const res = await axios.get(host + "p/" + selectedCity + "?depth=2")
                 console.log(res)
+                setWards([])
+                setSelectedWard("")
+                setSelectedDistrict("")
                 setDistricts(res.data.districts)
+            }
+            else {
+                setDistricts([])
             }
         }
 
         fetchDistricts()
-    }, [selectedCity])
+    }, [provinces, selectedCity])
 
     useEffect(() => {
         const fetchWards = async () => {
@@ -67,10 +73,13 @@ export default function Checkout() {
                 console.log(res)
                 setWards(res.data.wards)
             }
+            else {
+                setWards([])
+            }
         }
 
         fetchWards()
-    }, [selectedDistrict])
+    }, [districts, selectedDistrict])
 
     const subtotal = cart.reduce((acc, item) => acc + item.ThanhTien, 0)
 
@@ -187,29 +196,28 @@ export default function Checkout() {
 
                         <div className="space-y-4 mb-6">
                             {cart.map((item, index) => (
-                                <>
-                                    <div className="flex gap-4">
-                                        <div className="relative">
-                                            <img
-                                                src={`${import.meta.env.BASE_URL}src/assets/uploads/${item.MaThuoc}/${item.AnhDaiDien}`}
-                                                alt={item.TenThuoc}
-                                                className="w-20 h-20 object-cover rounded"
-                                            />
-                                            <span
-                                                className="absolute -top-2 -left-2 w-6 h-6 bg-[#E6815A] rounded-full flex items-center justify-center text-white font-bold "
-                                            >
-                                                {item.SoLuong}
-                                            </span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <h2 className="font-medium text-xl mb-1">
-                                                {item.TenThuoc}
-                                            </h2>
-                                            <p className="text-sm text-gray-500 mb-2">{item.DangBaoChe} - {item.QCDongGoi}</p>
-                                        </div>
-                                        <p className="font-semibold text-lg">{item.ThanhTien}₫</p>
+                                <div key={item.MaThuoc} className="flex gap-4">
+                                    <div className="relative">
+                                        <img
+                                            src={`${import.meta.env.BASE_URL}src/assets/uploads/${item.MaThuoc}/${item.AnhDaiDien}`}
+                                            alt={item.TenThuoc}
+                                            className="w-20 h-20 object-cover rounded"
+                                        />
+                                        <span
+                                            className="absolute -top-2 -left-2 w-6 h-6 bg-[#E6815A] rounded-full flex items-center justify-center text-white font-bold "
+                                        >
+                                            {item.SoLuong}
+                                        </span>
                                     </div>
-                                </>
+                                    <div className="flex-1">
+                                        <h2 className="font-medium text-xl mb-1">
+                                            {item.TenThuoc}
+                                        </h2>
+                                        <p className="text-sm text-gray-500 mb-2">{item.DangBaoChe} - {item.QCDongGoi}</p>
+                                    </div>
+                                    <p className="font-semibold text-lg">{item.ThanhTien}₫</p>
+                                </div>
+
                             ))}
                         </div>
 
