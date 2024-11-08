@@ -5,13 +5,12 @@ import { Search, ChevronLeft, ChevronRight, Eye, Edit, Filter, RefreshCcw, Chevr
 const Admin = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
-    const [productsPerPage] = useState(6)
+    const [productsPerPage] = useState(10)
     const [sortColumn, setSortColumn] = useState('MaThuoc')
     const [sortDirection, setSortDirection] = useState('asc')
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(true)
 
-    // Fetch data from API
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -26,7 +25,6 @@ const Admin = () => {
         fetchProducts()
     }, [])
 
-    // Filter and sort products
     const filteredAndSortedProducts = products
         .filter(product =>
             product.MaThuoc.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -38,7 +36,6 @@ const Admin = () => {
             return 0
         })
 
-    // Pagination logic
     const indexOfLastProduct = currentPage * productsPerPage
     const indexOfFirstProduct = indexOfLastProduct - productsPerPage
     const currentProducts = filteredAndSortedProducts.slice(indexOfFirstProduct, indexOfLastProduct)
