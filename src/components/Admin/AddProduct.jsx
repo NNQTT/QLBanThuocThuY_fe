@@ -3,11 +3,11 @@ import axios from 'axios';
 import { PlusCircle, X, Check, ChevronsUpDown, Search, Upload, User } from 'lucide-react';
 
 const AddProduct = () => {
-  const [ingredients, setIngredients] = useState([]);
-  const [openIngredients, setOpenIngredients] = useState(false);
+  const [thuoc, setthuoc] = useState([]);
+  const [openthuoc, setOpenthuoc] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [newIngredient, setNewIngredient] = useState('');
-  const [ingredientsList, setIngredientsList] = useState([]);
+  const [thuocList, setthuocList] = useState([]);
   const [nhomThuocList, setNhomThuocList] = useState([]);
   const [loaiSuDungList, setLoaiSuDungList] = useState([]);
   const [profilePicture, setProfilePicture] = useState(null)
@@ -31,14 +31,14 @@ const AddProduct = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ingredientsRes, nhomThuocRes, loaiSuDungRes] = await Promise.all([
+        const [thuocRes, nhomThuocRes, loaiSuDungRes] = await Promise.all([
           axios.get('http://localhost:3000/admin/getthanhphan'),
           axios.get('http://localhost:3000/admin/getnhomthuoc'),
           axios.get('http://localhost:3000/admin/getloaisudung'),
         ]);
 
 
-        setIngredientsList(ingredientsRes.data.map(item => ({
+        setthuocList(thuocRes.data.map(item => ({
           value: item.MaTP,
           label: item.TenThanhPhan
         })));
@@ -68,7 +68,7 @@ const AddProduct = () => {
 
 
   const toggleIngredient = (value) => {
-    setIngredients(prev =>
+    setthuoc(prev =>
       prev.includes(value)
         ? prev.filter(item => item !== value)
         : [...prev, value]
@@ -81,8 +81,8 @@ const AddProduct = () => {
         const response = await axios.post('http://localhost:3000/admin/postthanhphan', {
           label: newIngredient,
         });
-        setIngredientsList(prev => [...prev, { value: response.data.MaTP, label: response.data.TenThanhPhan }]);
-        setIngredients(prev => [...prev, response.data.MaTP]);
+        setthuocList(prev => [...prev, { value: response.data.MaTP, label: response.data.TenThanhPhan }]);
+        setthuoc(prev => [...prev, response.data.MaTP]);
         setNewIngredient('');
       } catch (error) {
         console.error('Error adding ingredient:', error);
@@ -92,24 +92,81 @@ const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Thu thập dữ liệu sản phẩm
     const productData = {
-      // Lấy dữ liệu từ form và các state khác để tạo đối tượng productData
+      maThuoc: document.getElementById("maThuoc").value,
+      tenThuoc: document.getElementById("tenThuoc").value,
+      giaBan: document.getElementById("giaBan").value,
+      dangBaoChe: document.getElementById("dangBaoChe").value,
+      qcDongGoi: document.getElementById("qcDongGoi").value,
+      congDung: document.getElementById("congDung").value,
+      anhDaiDien: profilePicture ? profilePicture.name : '',
+      trangThai: document.getElementById("trangThai").value,
+      maNhomThuoc: document.getElementById("maNhomThuoc").value,
+      maLoai: document.getElementById("maLoai").value,
+      thuoc: thuoc, // Thành phần của thuốc
     };
+  
+    // Khởi tạo formData để gửi file ảnh
+    const formData = new FormData();
+    formData.append('maThuoc', productData.maThuoc);
+    formData.append('tenThuoc', productData.tenThuoc);
+    formData.append('giaBan', productData.giaBan);
+    formData.append('dangBaoChe', productData.dangBaoChe);
+    formData.append('qcDongGoi', productData.qcDongGoi);
+    formData.append('congDung', productData.congDung);
+    formData.append('anhDaiDien', productData.anhDaiDien);
+    formData.append('trangThai', productData.trangThai);
+    formData.append('maNhomThuoc', productData.maNhomThuoc);
+    formData.append('maLoai', productData.maLoai);
+  
+    // Thêm hình ảnh đại diện vào formData
+    if (profilePicture) {
+      formData.append('anhDaiDienFile', profilePicture);
+    }
+  
+    // Thêm danh sách ảnh của gallery vào formData
+    selectedFiles.forEach((file, index) => {
+      formData.append(`galleryImages[${index}]`, file);
+    });
+  
     try {
-      await axios.post('http://localhost:3000/admin/postthuoc', productData);
-      alert('Sản phẩm đã được thêm thành công!');
+      // Thêm thuốc vào bảng Thuoc
+      await axios.post('http://localhost:3000/admin/postthuoc', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+  
+      // Thêm các thành phần (thuoc) vào bảng ThuocThanhPhan
+      for (const thanhPhan of thuoc) {
+        await axios.post('http://localhost:3000/admin/postthuoctp', {
+          maThuoc: productData.maThuoc,
+          maTP: thanhPhan.value,
+        });
+      }
+  
+      // Thêm ảnh vào bảng DanhMucHinhAnh
+      for (const file of selectedFiles) {
+        await axios.post('http://localhost:3000/admin/postdanhmucha', {
+          maThuoc: productData.maThuoc,
+          tenHinhAnh: file.name,
+        });
+      }
+  
+      alert('Sản phẩm đã được thêm thành công cùng với các thành phần và hình ảnh!');
     } catch (error) {
-      console.error('Error adding product:', error);
+      console.error('Lỗi khi thêm sản phẩm:', error);
     }
   };
+  
 
-  const filteredIngredients = ingredientsList.filter(ingredient =>
+  const filteredthuoc = thuocList.filter(ingredient =>
     ingredient.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleClickOutside = (event) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      setOpenIngredients(false);
+      setOpenthuoc(false);
     }
   };
 
@@ -140,8 +197,8 @@ const AddProduct = () => {
             <input id="qcDongGoi" type="text" placeholder="Nhập quy cách đóng gói" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51]" />
           </div>
           <div>
-            <label htmlFor="nhomThuoc" className="block text-sm font-medium text-[#4A4E69] mb-1">Nhóm thuốc</label>
-            <select id="nhomThuoc" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white">
+            <label htmlFor="maNhomThuoc" className="block text-sm font-medium text-[#4A4E69] mb-1">Nhóm thuốc</label>
+            <select id="maNhomThuoc" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white">
               <option value="">Chọn nhóm thuốc</option>
               {nhomThuocList.map((item) => (
                 <option key={item.value} value={item.value}>{item.label}</option>
@@ -149,8 +206,8 @@ const AddProduct = () => {
             </select>
           </div>
           <div>
-            <label htmlFor="loaiSuDung" className="block text-sm font-medium text-[#4A4E69] mb-1">Loại sử dụng</label>
-            <select id="loaiSuDung" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white">
+            <label htmlFor="maLoai" className="block text-sm font-medium text-[#4A4E69] mb-1">Loại sử dụng</label>
+            <select id="maLoai" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white">
               <option value="">Chọn loại sử dụng</option>
               {loaiSuDungList.map((item) => (
                 <option key={item.value} value={item.value}>{item.label}</option>
@@ -175,11 +232,11 @@ const AddProduct = () => {
 
         <div className="relative" ref={dropdownRef}>
           <label className="block text-sm font-medium text-[#4A4E69] mb-1">Thành phần</label>
-          <button type="button" onClick={() => setOpenIngredients(!openIngredients)} className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white text-left flex justify-between items-center">
-            {ingredients.length > 0 ? `${ingredients.length} thành phần đã chọn` : "Chọn thành phần"}
+          <button type="button" onClick={() => setOpenthuoc(!openthuoc)} className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white text-left flex justify-between items-center">
+            {thuoc.length > 0 ? `${thuoc.length} thành phần đã chọn` : "Chọn thành phần"}
             <ChevronsUpDown className="h-4 w-4 text-gray-400" />
           </button>
-          {openIngredients && (
+          {openthuoc && (
             <div className="absolute z-10 w-full mt-1 bg-white border border-[#E76F51] rounded-md shadow-lg">
               <div className="p-2 border-b border-[#E76F51]">
                 <div className="relative">
@@ -194,13 +251,13 @@ const AddProduct = () => {
                 </div>
               </div>
               <ul className="max-h-60 overflow-auto">
-                {filteredIngredients.map((ingredient) => (
+                {filteredthuoc.map((ingredient) => (
                   <li
                     key={ingredient.value}
                     className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
                     onClick={() => toggleIngredient(ingredient.value)}
                   >
-                    <Check className={`mr-2 h-4 w-4 ${ingredients.includes(ingredient.value) ? 'text-[#E76F51]' : 'text-transparent'}`} />
+                    <Check className={`mr-2 h-4 w-4 ${thuoc.includes(ingredient.value) ? 'text-[#E76F51]' : 'text-transparent'}`} />
                     {ingredient.label}
                   </li>
                 ))}
@@ -226,16 +283,16 @@ const AddProduct = () => {
             </div>
           )}
         </div>
-        {ingredients.length > 0 && (
+        {thuoc.length > 0 && (
           <div className="mt-2">
             <h4 className="font-medium text-sm text-[#4A4E69] mb-1">Thành phần đã chọn:</h4>
             <div className="flex flex-wrap gap-2">
-              {ingredients.map((ingredient) => (
+              {thuoc.map((ingredient) => (
                 <span
                   key={ingredient}
                   className="bg-[#FFE5D9] text-[#E76F51] text-sm px-2 py-1 rounded-full flex items-center"
                 >
-                  {ingredientsList.find((item) => item.value === ingredient)?.label}
+                  {thuocList.find((item) => item.value === ingredient)?.label}
                   <button
                     type="button"
                     onClick={() => toggleIngredient(ingredient)}
