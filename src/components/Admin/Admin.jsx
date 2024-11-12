@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Search, ChevronLeft, ChevronRight, Eye, Edit, Filter, RefreshCcw, ChevronDown } from 'lucide-react'
+import { Link } from 'react-router-dom';
 
 const Admin = () => {
     const [searchTerm, setSearchTerm] = useState('')
@@ -125,12 +126,11 @@ const Admin = () => {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div className="flex space-x-2">
-                                        <button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-900 transition-colors duration-200 transform hover:scale-110" title="Xem chi tiết">
-                                            <Eye size={18} />
-                                        </button>
+                                    <div className="flex">
                                         <button variant="ghost" size="sm" className="text-green-600 hover:text-green-900 transition-colors duration-200 transform hover:scale-110" title="Chỉnh sửa">
-                                            <Edit size={18} />
+                                            <Link to="/admin/detailproduct">
+                                                <Edit size={18} />
+                                            </Link>
                                         </button>
                                     </div>
                                 </td>

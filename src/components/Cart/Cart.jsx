@@ -144,7 +144,7 @@ export default function Cart() {
                             }<span className='text-lg absolute' style={{ top: -1 }}>₫</span></span>
                         </div>
                         <ul className="text-sm text-gray-600 space-y-2 mb-4">
-                            <li>• Miễn phí vận chuyển cho đơn hàng từ 399.000₫ (Dưới 10km từ 140 Lê Trọng Tấn)</li>
+                            <li>• Miễn phí vận chuyển cho đơn hàng từ 399.000₫</li>
                             <li>• Giao hàng hỏa tốc trong vòng 4 giờ, áp dụng tại khu vực nội thành Hồ Chí Minh</li>
                         </ul>
                         <hr className="my-5 h-0.5 border-t-1 bg-neutral-100 dark:bg-white/10" />
