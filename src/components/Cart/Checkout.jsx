@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
+import { message } from "antd"
 
 export default function Checkout() {
+    const [name, setName] = useState("")
+    const [email, setEmail] = useState("")
+    const [phone, setPhone] = useState("")
+    const [address, setAddress] = useState("")
+
     const [provinces, setProvinces] = useState([])
     const [selectedCity, setSelectedCity] = useState("")
     const [districts, setDistricts] = useState([])
@@ -9,6 +15,12 @@ export default function Checkout() {
     const [wards, setWards] = useState([])
     const [selectedWard, setSelectedWard] = useState("")
     const [cart, setCart] = useState([])
+
+    const [errors, setErrors] = useState({})
+    const [showConfirmation, setShowConfirmation] = useState(false)
+    const [showSuccess, setShowSuccess] = useState(false)
+
+    const [orderid, setOrderid] = useState("")
 
     const host = "https://provinces.open-api.vn/api/";
 
@@ -83,6 +95,66 @@ export default function Checkout() {
 
     const shippingFee = selectedCity === "79" && subtotal < 399000 ? 25000 : 0
 
+    const validateForm = () => {
+        const newErrors = {}
+        if (!name.trim()) newErrors.name = 'Họ và tên là bắt buộc'
+        if (!email.trim()) newErrors.email = 'Email là bắt buộc'
+        else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Email không hợp lệ'
+        if (!phone.trim()) newErrors.phone = 'Số điện thoại là bắt buộc'
+        else if (!/^[0-9]{10}$/.test(phone)) newErrors.phone = 'Số điện thoại không hợp lệ'
+        if (!address.trim()) newErrors.address = 'Địa chỉ là bắt buộc'
+        if (!selectedCity) newErrors.city = 'Vui lòng chọn tỉnh/thành'
+        if (!selectedDistrict) newErrors.district = 'Vui lòng chọn quận/huyện'
+        if (!selectedWard) newErrors.ward = 'Vui lòng chọn phường/xã'
+        setErrors(newErrors)
+        return Object.keys(newErrors).length === 0
+    }
+
+    const handleSubmit = () => {
+        if (validateForm()) {
+            setShowConfirmation(true)
+        }
+    }
+
+    const handleConfirm = () => {
+        setShowConfirmation(false)
+        // Simulate form submission
+        const order = async () => {
+            try {
+                const ward = wards.find(ward => ward.code == selectedWard)
+                const district = districts.find(district => district.code == selectedDistrict)
+                const city = provinces.find(province => province.code == selectedCity)
+                console.log(ward, district, city)
+                const res = await axios.post("http://localhost:3000/cart/checkout", {
+                    name: name,
+                    phone: phone,
+                    address: address + ', ' + ward.name + ', ' + district.name + ', ' + city.name,
+                    email: email,
+                    total: subtotal + shippingFee,
+                    cartid: cart[0].MaGioHang || '',
+                })
+                console.log(res)
+                setShowSuccess(true)
+                setOrderid(res.data.mahd)
+                sessionStorage.removeItem('cart')
+            } catch (error) {
+                console.log(error)
+                message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau")
+            }
+        }
+        order()
+    }
+
+    const onCloseSuccess = () => {
+        setShowSuccess(false)
+        window.location.href = "/"
+    }
+
+    const onChangePhone = (e) => {
+        const value = e.target.value.replace(/\D/g, '')
+        setPhone(value)
+    }
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="grid gap-8 lg:grid-cols-2">
@@ -93,23 +165,27 @@ export default function Checkout() {
                         <div className="space-y-4">
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                                <input type="text" id="name" name="name" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" placeholder="Nhập họ và tên" />
+                                <input type="text" id="name" name="name" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" placeholder="Nhập họ và tên" onChange={(e) => setName(e.target.value)} />
+                                {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                    <input type="email" id="email" name="email" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" placeholder="example@email.com" />
+                                    <input type="email" id="email" name="email" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" placeholder="example@email.com" onChange={(e) => setEmail(e.target.value)} />
+                                    {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
                                 </div>
                                 <div>
                                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                                    <input type="tel" id="phone" name="phone" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" placeholder="0xxx xxx xxx" />
+                                    <input type="tel" id="phone" name="phone" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" placeholder="0xxx xxx xxx" value={phone} onChange={onChangePhone} />
+                                    {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
                                 </div>
                             </div>
 
                             <div>
                                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
-                                <input type="text" id="address" name="address" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" placeholder="Số nhà, tên đường" />
+                                <input type="text" id="address" name="address" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" placeholder="Số nhà, tên đường" onChange={(e) => setAddress(e.target.value)} />
+                                {errors.address && <p className="mt-1 text-xs text-red-500">{errors.address}</p>}
                             </div>
 
                             <div className="grid grid-cols-3 gap-4">
@@ -123,6 +199,7 @@ export default function Checkout() {
                                             ))
                                         }
                                     </select>
+                                    {errors.city && <p className="mt-1 text-xs text-red-500">{errors.city}</p>}
                                 </div>
 
                                 <div>
@@ -135,18 +212,20 @@ export default function Checkout() {
                                             ))
                                         }
                                     </select>
+                                    {errors.district && <p className="mt-1 text-xs text-red-500">{errors.district}</p>}
                                 </div>
 
                                 <div>
                                     <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">Phường/Xã</label>
                                     <select id="district" name="district" onChange={(e) => setSelectedWard(e.target.value)} disabled={!selectedDistrict} className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
-                                        <option value="">Chọn quận/huyện</option>
+                                        <option value="">Chọn Phường/Xã</option>
                                         {
                                             wards?.map(ward => (
                                                 <option key={ward.code} value={ward.code}>{ward.name}</option>
                                             ))
                                         }
                                     </select>
+                                    {errors.ward && <p className="mt-1 text-xs text-red-500">{errors.ward}</p>}
                                 </div>
                             </div>
                         </div>
@@ -234,22 +313,73 @@ export default function Checkout() {
                             </div>
                         </div>
 
-                        <button className="w-full mt-2 bg-[#FF9A76] text-[#2C1A12] py-2 rounded transition-all 
-        duration-300 
-        ease-in-out
-        hover:opacity-90 
-        hover:scale-105 
-        transform
-        focus:outline-none 
-        focus:ring-2 
-        focus:ring-[#FF9A76] 
-        focus:ring-opacity-50"
+                        <button
+                            onClick={handleSubmit}
+                            className="
+                                w-full mt-2 
+                                bg-[#FF9A76] 
+                                text-[#2C1A12] 
+                                py-2 
+                                rounded 
+                                transition-all 
+                                duration-300 
+                                ease-in-out
+                                hover:opacity-90 
+                                hover:scale-105 
+                                transform
+                                focus:outline-none 
+                                focus:ring-2 
+                                focus:ring-[#FF9A76] 
+                                focus:ring-opacity-50
+                            "
+                            disabled={!subtotal}
                         >
                             THANH TOÁN
                         </button>
                     </div>
                 </div>
             </div>
+
+            {/* Confirmation Popup */}
+            {showConfirmation && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg max-w-sm w-full">
+                        <h2 className="text-xl font-bold mb-4">Xác nhận đơn hàng</h2>
+                        <p>Bạn có chắc chắn muốn đặt hàng?</p>
+                        <div className="mt-6 flex justify-end space-x-4">
+                            <button
+                                onClick={() => setShowConfirmation(false)}
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={handleConfirm}
+                                className="px-4 py-2 bg-[#FF9A76] text-[#2C1A12] rounded-md hover:opacity-90"
+                            >
+                                Xác nhận
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Success Popup */}
+            {showSuccess && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg max-w-sm w-full">
+                        <h2 className="text-xl font-bold mb-4 text-green-600">Đặt hàng thành công!</h2>
+                        <p>Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất.</p>
+                        <p>Mã đơn hàng của bạn là: <span className="font-semibold">{orderid}</span></p>
+                        <button
+                            onClick={onCloseSuccess}
+                            className="mt-6 w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                        >
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
