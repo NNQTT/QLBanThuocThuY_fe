@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { PlusCircle, X, Check, ChevronsUpDown, Search, Upload, User } from 'lucide-react';
 
+
 const AddProduct = () => {
   const [thanhphan, setthanhphan] = useState([]);
   const [openthanhphan, setOpenthanhphan] = useState(false);

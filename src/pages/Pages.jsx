@@ -13,6 +13,7 @@ import OrderList from '../components/Admin/OrderList';
 import AddProduct from '../components/Admin/AddProduct';
 import ListProduct from '../components/HomePage/ListProduct';
 import Checkout from '../components/Cart/Checkout';
+import DetailProduct from '../components/Admin/DetailProduct';
 
 
 function Pages() {
@@ -33,6 +34,7 @@ function Pages() {
                     <Route index element={<Admin />} />
                     <Route path='orderlist' element={<OrderList/>}/>
                     <Route path='addproduct' element={<AddProduct/>}/>
+                    <Route path='detailproduct' element={<DetailProduct/>}/>
                 </Route>
                 <Route path='/adminlogin' element={<LoginAdmin />}>
                 </Route>
