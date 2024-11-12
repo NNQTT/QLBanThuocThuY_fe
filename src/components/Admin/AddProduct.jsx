@@ -3,11 +3,11 @@ import axios from 'axios';
 import { PlusCircle, X, Check, ChevronsUpDown, Search, Upload, User } from 'lucide-react';
 
 const AddProduct = () => {
-  const [thuoc, setthuoc] = useState([]);
-  const [openthuoc, setOpenthuoc] = useState(false);
+  const [thanhphan, setthanhphan] = useState([]);
+  const [openthanhphan, setOpenthanhphan] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [newIngredient, setNewIngredient] = useState('');
-  const [thuocList, setthuocList] = useState([]);
+  const [thanhphanList, setthanhphanList] = useState([]);
   const [nhomThuocList, setNhomThuocList] = useState([]);
   const [loaiSuDungList, setLoaiSuDungList] = useState([]);
   const [profilePicture, setProfilePicture] = useState(null)
@@ -31,14 +31,13 @@ const AddProduct = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [thuocRes, nhomThuocRes, loaiSuDungRes] = await Promise.all([
+        const [thanhphanRes, nhomThuocRes, loaiSuDungRes] = await Promise.all([
           axios.get('http://localhost:3000/admin/getthanhphan'),
           axios.get('http://localhost:3000/admin/getnhomthuoc'),
           axios.get('http://localhost:3000/admin/getloaisudung'),
         ]);
 
-
-        setthuocList(thuocRes.data.map(item => ({
+        setthanhphanList(thanhphanRes.data.map(item => ({
           value: item.MaTP,
           label: item.TenThanhPhan
         })));
@@ -68,7 +67,7 @@ const AddProduct = () => {
 
 
   const toggleIngredient = (value) => {
-    setthuoc(prev =>
+    setthanhphan(prev =>
       prev.includes(value)
         ? prev.filter(item => item !== value)
         : [...prev, value]
@@ -76,28 +75,42 @@ const AddProduct = () => {
   };
 
   const addNewIngredient = async () => {
-    if (newIngredient.trim() !== '') {
-      try {
-        const response = await axios.post('http://localhost:3000/admin/postthanhphan', {
-          label: newIngredient,
-        });
-        setthuocList(prev => [...prev, { value: response.data.MaTP, label: response.data.TenThanhPhan }]);
-        setthuoc(prev => [...prev, response.data.MaTP]);
-        setNewIngredient('');
-      } catch (error) {
-        console.error('Error adding ingredient:', error);
-      }
+    console.log('Giá trị của newIngredient:', newIngredient);
+
+    // Kiểm tra nếu input trống
+    if (newIngredient.trim() === '') {
+      alert('Vui lòng nhập thành phần mới!');
+      return;
+    }
+
+    try {
+      // Gửi yêu cầu POST đến server
+      const response = await axios.post('http://localhost:3000/admin/postthanhphan', {
+        tenThanhPhan: newIngredient,
+      });
+
+      // Kiểm tra phản hồi và thêm thành phần vào danh sách
+      setthanhphanList(prev => [...prev, { value: response.data.thuoc.MaTP, label: response.data.thuoc.TenThanhPhan }]);  // response.data chứa dữ liệu trả về từ server
+      setthanhphan(prev => [...prev, response.data.thuoc.MaTP]);
+      console.log(response.data)
+      setNewIngredient('');  // Reset lại giá trị input sau khi thêm thành công
+      console.log(thanhphanList)
+    } catch (error) {
+      console.error('Error adding ingredient:', error.response?.data || error.message);
+      alert('Có lỗi xảy ra khi thêm thành phần!');
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+
     // Thu thập dữ liệu sản phẩm
     const productData = {
       maThuoc: document.getElementById("maThuoc").value,
       tenThuoc: document.getElementById("tenThuoc").value,
       giaBan: document.getElementById("giaBan").value,
+      soLuong: document.getElementById("soLuong").value,
       dangBaoChe: document.getElementById("dangBaoChe").value,
       qcDongGoi: document.getElementById("qcDongGoi").value,
       congDung: document.getElementById("congDung").value,
@@ -105,14 +118,17 @@ const AddProduct = () => {
       trangThai: document.getElementById("trangThai").value,
       maNhomThuoc: document.getElementById("maNhomThuoc").value,
       maLoai: document.getElementById("maLoai").value,
-      thuoc: thuoc, // Thành phần của thuốc
+      thanhphan: thanhphan,
     };
-  
+
+    console.log(productData)
+
     // Khởi tạo formData để gửi file ảnh
     const formData = new FormData();
     formData.append('maThuoc', productData.maThuoc);
     formData.append('tenThuoc', productData.tenThuoc);
     formData.append('giaBan', productData.giaBan);
+    formData.append('soLuong', productData.soLuong);
     formData.append('dangBaoChe', productData.dangBaoChe);
     formData.append('qcDongGoi', productData.qcDongGoi);
     formData.append('congDung', productData.congDung);
@@ -120,59 +136,70 @@ const AddProduct = () => {
     formData.append('trangThai', productData.trangThai);
     formData.append('maNhomThuoc', productData.maNhomThuoc);
     formData.append('maLoai', productData.maLoai);
-  
-    // Thêm hình ảnh đại diện vào formData
-    if (profilePicture) {
-      formData.append('anhDaiDienFile', profilePicture);
-    }
-  
+
+
     // Thêm danh sách ảnh của gallery vào formData
     selectedFiles.forEach((file, index) => {
       formData.append(`galleryImages[${index}]`, file);
     });
-  
+
+    
     try {
-      // Thêm thuốc vào bảng Thuoc
-      await axios.post('http://localhost:3000/admin/postthuoc', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      await axios.post('http://localhost:3000/admin/postthuoc', productData, {
+        headers: { 'Content-Type': 'application/json' }
       });
-  
-      // Thêm các thành phần (thuoc) vào bảng ThuocThanhPhan
-      for (const thanhPhan of thuoc) {
-        await axios.post('http://localhost:3000/admin/postthuoctp', {
-          maThuoc: productData.maThuoc,
-          maTP: thanhPhan.value,
-        });
-      }
-  
+
+
+       // Thêm các thành phần (thanhphan) vào bảng ThuocThanhPhan
+      //  console.log("Dữ liệu thanhphan:", thanhphan);
+       for (const thanhPhan of thanhphan) {
+        if (!thanhPhan) {
+            console.error('Thiếu mã thành phần trong thanhPhan:', thanhPhan);
+            continue;
+        }
+
+        try {
+            await axios.post('http://localhost:3000/admin/postthuoctp', {
+                maThuoc: productData.maThuoc,
+                maTP: thanhPhan,
+            });
+        } catch (error) {
+            console.error('Lỗi khi gửi yêu cầu:', error.response ? error.response.data : error.message);
+        }
+    }
+    
+
       // Thêm ảnh vào bảng DanhMucHinhAnh
       for (const file of selectedFiles) {
         await axios.post('http://localhost:3000/admin/postdanhmucha', {
           maThuoc: productData.maThuoc,
           tenHinhAnh: file.name,
+          
         });
       }
-  
+
       alert('Sản phẩm đã được thêm thành công cùng với các thành phần và hình ảnh!');
     } catch (error) {
-      console.error('Lỗi khi thêm sản phẩm:', error);
+      console.error("Error response data:", error.response?.data);
+      console.error("Status code:", error.response?.status);
     }
   };
-  
 
-  const filteredthuoc = thuocList.filter(ingredient =>
-    ingredient.label.toLowerCase().includes(searchTerm.toLowerCase())
+
+  const filteredthanhphan = thanhphanList.filter(ingredient =>
+    ingredient?.label?.toLowerCase().includes(searchTerm.toLowerCase())
+
   );
 
   const handleClickOutside = (event) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      setOpenthuoc(false);
+      setOpenthanhphan(false);
     }
   };
 
 
   return (
-    <div className="bg-background mx-auto max-w-4xl p-6 rounded-lg shadow-md">
+<div className="bg-background mx-auto max-w-4xl p-6 rounded-lg shadow-md">
       <h2 className="text-3xl font-bold text-[#22223B] mb-6">Thêm sản phẩm mới</h2>
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -183,14 +210,6 @@ const AddProduct = () => {
           <div>
             <label htmlFor="tenThuoc" className="block text-sm font-medium text-[#4A4E69] mb-1">Tên thuốc</label>
             <input id="tenThuoc" type="text" placeholder="Nhập tên thuốc" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51]" />
-          </div>
-          <div>
-            <label htmlFor="giaBan" className="block text-sm font-medium text-[#4A4E69] mb-1">Giá bán</label>
-            <input id="giaBan" type="number" placeholder="Nhập giá bán" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51]" />
-          </div>
-          <div>
-            <label htmlFor="dangBaoChe" className="block text-sm font-medium text-[#4A4E69] mb-1">Dạng bào chế</label>
-            <input id="dangBaoChe" type="text" placeholder="Nhập dạng bào chế" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51]" />
           </div>
           <div>
             <label htmlFor="qcDongGoi" className="block text-sm font-medium text-[#4A4E69] mb-1">Quy cách đóng gói</label>
@@ -218,25 +237,38 @@ const AddProduct = () => {
             <label htmlFor="trangThai" className="block text-sm font-medium text-[#4A4E69] mb-1">Trạng thái</label>
             <select id="trangThai" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white">
               <option value="">Chọn trạng thái</option>
-              <option value="active">Còn hàng</option>
-              <option value="outOfStock">Hết hàng</option>
+              <option value="Còn hàng">Còn hàng</option>
+              <option value="Tạm hết hàng">Hết hàng</option>
             </select>
           </div>
         </div>
+        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label htmlFor="giaBan" className="block text-sm font-medium text-[#4A4E69] mb-1">Giá bán</label>
+              <input id="giaBan" type="number" placeholder="Nhập giá bán" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51]" />
+            </div>
+            <div>
+              <label htmlFor="soLuong" className="block text-sm font-medium text-[#4A4E69] mb-1">Số lượng</label>
+              <input id="soLuong" type="number" placeholder="Nhập số lượng" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51]" />
+            </div>
+            <div>
+              <label htmlFor="dangBaoChe" className="block text-sm font-medium text-[#4A4E69] mb-1">Dạng bào chế</label>
+              <input id="dangBaoChe" type="text" placeholder="Nhập dạng bào chế" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51]" />
+            </div>
+          </div>
 
         <div>
           <label htmlFor="congDung" className="block text-sm font-medium text-[#4A4E69] mb-1">Công dụng</label>
           <textarea id="congDung" placeholder="Nhập công dụng của thuốc" className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] h-24"></textarea>
         </div>
 
-
         <div className="relative" ref={dropdownRef}>
           <label className="block text-sm font-medium text-[#4A4E69] mb-1">Thành phần</label>
-          <button type="button" onClick={() => setOpenthuoc(!openthuoc)} className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white text-left flex justify-between items-center">
-            {thuoc.length > 0 ? `${thuoc.length} thành phần đã chọn` : "Chọn thành phần"}
+          <button type="button" onClick={() => setOpenthanhphan(!openthanhphan)} className="w-full px-3 py-2 border border-[#E76F51] rounded-md focus:outline-none focus:ring-2 focus:ring-[#E76F51] bg-white text-left flex justify-between items-center">
+            {thanhphan.length > 0 ? `${thanhphan.length} thành phần đã chọn` : "Chọn thành phần"}
             <ChevronsUpDown className="h-4 w-4 text-gray-400" />
           </button>
-          {openthuoc && (
+          {openthanhphan && (
             <div className="absolute z-10 w-full mt-1 bg-white border border-[#E76F51] rounded-md shadow-lg">
               <div className="p-2 border-b border-[#E76F51]">
                 <div className="relative">
@@ -251,13 +283,13 @@ const AddProduct = () => {
                 </div>
               </div>
               <ul className="max-h-60 overflow-auto">
-                {filteredthuoc.map((ingredient) => (
+                {filteredthanhphan.map((ingredient) => (
                   <li
                     key={ingredient.value}
                     className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
                     onClick={() => toggleIngredient(ingredient.value)}
                   >
-                    <Check className={`mr-2 h-4 w-4 ${thuoc.includes(ingredient.value) ? 'text-[#E76F51]' : 'text-transparent'}`} />
+                    <Check className={`mr-2 h-4 w-4 ${thanhphan.includes(ingredient.value) ? 'text-[#E76F51]' : 'text-transparent'}`} />
                     {ingredient.label}
                   </li>
                 ))}
@@ -283,16 +315,16 @@ const AddProduct = () => {
             </div>
           )}
         </div>
-        {thuoc.length > 0 && (
+        {thanhphan.length > 0 && (
           <div className="mt-2">
             <h4 className="font-medium text-sm text-[#4A4E69] mb-1">Thành phần đã chọn:</h4>
             <div className="flex flex-wrap gap-2">
-              {thuoc.map((ingredient) => (
+              {thanhphan.map((ingredient) => (
                 <span
                   key={ingredient}
                   className="bg-[#FFE5D9] text-[#E76F51] text-sm px-2 py-1 rounded-full flex items-center"
                 >
-                  {thuocList.find((item) => item.value === ingredient)?.label}
+                  {thanhphanList.find((item) => item.value === ingredient)?.label}
                   <button
                     type="button"
                     onClick={() => toggleIngredient(ingredient)}
