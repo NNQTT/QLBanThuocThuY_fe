@@ -6,6 +6,8 @@ import { LeftOutlined, RightOutlined, MinusOutlined, PlusOutlined, ShoppingCartO
 import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 
+import './css/flex_important.css'
+
 const { TabPane } = Tabs
 const { Text } = Typography
 
@@ -31,7 +33,53 @@ export default function ProductDetail() {
     const navigate = useNavigate()
 
     const handleAddToCart = () => {
-        message.success('Thêm vào giỏ hàng thành công')
+        const addToCart = async () => {
+            const userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+            console.log('userInfo:', userInfo)
+            if (userInfo) {
+                const res = await axios.post(`http://localhost:3000/cart/${userInfo.tentaikhoan}/${productId}`, {
+                    uid: userInfo.tentaikhoan,
+                    productId: product.MaThuoc,
+                    quantity: quantity,
+                })
+                console.log('res:', res.data)
+                if (!res.data.success) {
+                    message.error('Thêm vào giỏ hàng thất bại')
+                    return
+                }
+            }
+
+            else {
+                let cart = sessionStorage.getItem('cart')
+                if (cart) {
+                    cart = JSON.parse(cart)
+                }
+                else {
+                    cart = []
+                }
+                if (cart.find(item => item.MaThuoc === product.MaThuoc)) {
+                    cart.find(item => item.MaThuoc === product.MaThuoc).SoLuong += quantity
+                    cart.find(item => item.MaThuoc === product.MaThuoc).ThanhTien = cart.find(item => item.MaThuoc === product.MaThuoc).SoLuong * product.GiaBan
+                }
+                else {
+                    cart.push({
+                        MaThuoc: product.MaThuoc,
+                        SoLuong: quantity,
+                        ThanhTien: product.GiaBan * quantity,
+                        TenThuoc: product.TenThuoc,
+                        DangBaoChe: product.DangBaoChe,
+                        QCDongGoi: product.QCDongGoi,
+                        GiaBan: product.GiaBan,
+                        AnhDaiDien: product.AnhDaiDien,
+                    })
+                }
+
+                sessionStorage.setItem('cart', JSON.stringify(cart))
+            }
+            message.success('Thêm vào giỏ hàng thành công')
+        }
+
+        addToCart()
     }
 
     const handleCarouselChange = (current, carouselRef, setShowLeft, setShowRight) => {
@@ -139,7 +187,7 @@ export default function ProductDetail() {
                                 beforeChange={(_, next) => handleCarouselChange(next, carouselRef2, setShowLeftArrow2, setShowRightArrow2)}
                             >
                                 {listAlbumProduct.map((item, i) => (
-                                    <div key={i} className="flex justify-center items-center h-[500px]">
+                                    <div key={i} className="flex justify-center items-center h-[500px] flex-important">
                                         <img
                                             key={i}
                                             src={`${import.meta.env.BASE_URL}src/assets/uploads/${item.MaThuoc}/${item.TenHinhAnh}`}
