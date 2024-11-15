@@ -40,11 +40,14 @@ export default function Cart() {
         if (userInfo) {
             await axios.delete(`http://localhost:3000/cart/${userInfo.tentaikhoan}/${item.MaThuoc}`)
         }
+        const copyCart = cart.filter(i => i.MaThuoc !== item.MaThuoc)
+        setCart(copyCart)
+        if (!copyCart.length) {
+            sessionStorage.removeItem('cart')
+        }
         else {
             sessionStorage.setItem('cart', JSON.stringify(copyCart))
         }
-        const copyCart = cart.filter(i => i.MaThuoc !== item.MaThuoc)
-        setCart(copyCart)
     }
 
     const incrementQuantity = async (item) => {
@@ -110,7 +113,7 @@ export default function Cart() {
                                                     {item.TenThuoc}
                                                 </h2>
                                                 <p className="text-sm text-gray-500 mb-2">{item.DangBaoChe} - {item.QCDongGoi}</p>
-                                                <p className="font-semibold text-lg">{item.ThanhTien}₫</p>
+                                                <p className="font-semibold text-lg">{item.ThanhTien.toLocaleString()}₫</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-end gap-2 mt-4">
@@ -140,7 +143,7 @@ export default function Cart() {
                         <div className="flex justify-between mb-4">
                             <span className='text-xl font-bold'>Tổng tiền:</span>
                             <span className="font-bold text-red-600 text-2xl relative">{
-                                cart.reduce((acc, item) => acc + item.ThanhTien, 0)
+                                cart.reduce((acc, item) => acc + item.ThanhTien, 0).toLocaleString()
                             }<span className='text-lg absolute' style={{ top: -1 }}>₫</span></span>
                         </div>
                         <ul className="text-sm text-gray-600 space-y-2 mb-4">

@@ -125,6 +125,16 @@ export default function Checkout() {
                 const district = districts.find(district => district.code == selectedDistrict)
                 const city = provinces.find(province => province.code == selectedCity)
                 console.log(ward, district, city)
+                const products = []
+                if (!userInfo) {
+                    for (let item of cart) {
+                        products.push({
+                            MaThuoc: item.MaThuoc,
+                            SoLuong: item.SoLuong,
+                            ThanhTien: item.ThanhTien
+                        })
+                    }
+                }
                 const res = await axios.post("http://localhost:3000/cart/checkout", {
                     name: name,
                     phone: phone,
@@ -132,6 +142,7 @@ export default function Checkout() {
                     email: email,
                     total: subtotal + shippingFee,
                     cartid: cart[0].MaGioHang || '',
+                    products: products
                 })
                 console.log(res)
                 setShowSuccess(true)
