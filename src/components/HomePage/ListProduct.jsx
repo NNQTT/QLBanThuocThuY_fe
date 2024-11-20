@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { CiFilter } from "react-icons/ci";
 import { FaHome } from "react-icons/fa";
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const ListProduct = ({ searchResults, setSearchResults, searchTerm }) => {
   const [priceFilter, setPriceFilter] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const [listProduct, setListProduct] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [groupName, setGroupName] = useState('');
@@ -22,6 +23,14 @@ const ListProduct = ({ searchResults, setSearchResults, searchTerm }) => {
     { name: 'VI SINH VẬT', group: 'N5' },
   ];
 
+  const priceRanges = [
+    { id: "under-20", label: "Dưới 20.000đ", value: "19000" },
+    { id: "20-50", label: "20.000đ - 50.000đ", value: "21000" },
+    { id: "50-100", label: "50.000đ - 100.000đ", value: "51000" },
+    { id: "100-200", label: "100.000đ - 200.000đ", value: "101000" },
+    { id: "over-200", label: "Trên 200.000đ", value: "201000" },
+  ]
+
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -29,14 +38,58 @@ const ListProduct = ({ searchResults, setSearchResults, searchTerm }) => {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const groupFromUrl = params.get('group');
+    if (groupFromUrl) {
+      setGroupName(groupFromUrl);
+    }
+  }, [location]);
+
+  useEffect(() => {
     const fetchProducts = async () => {
       try {
-        if (groupName) {
+        console.log("Current states:", { priceFilter, groupName });
+        if (priceFilter !== '') {
+          const params = {
+            price: priceFilter,
+            page: currentPage,
+            pagesize: pageSize,
+          };
+          if (groupName) {
+            params.groupName = groupName;
+          }
+          const response = await axios.get(
+            'http://localhost:3000/product/getproductsfilterdbyprice',
+            { params }
+          );
+          setListProduct(response.data.products);
+          setTotalPages(Math.ceil(response.data.totalProducts / parseInt(pageSize)));
+        }
+        else if (sortBy !== 'default') {
+          const params = {
+            sort: sortBy,
+            page: currentPage,
+            pagesize: pageSize,
+          };
+          if (groupName) {
+            params.groupName = groupName;
+          }
+          const response = await axios.get(
+            'http://localhost:3000/product/getproductssortedbyprice',
+            { params }
+          );
+          setListProduct(response.data.products);
+          setTotalPages(Math.ceil(response.data.totalProducts / parseInt(pageSize)));
+        } else if (groupName) {
           const response = await axios.get('http://localhost:3000/product/getproductsbygroup', {
-            params: { groupName }
+            params: { 
+              groupName: groupName,
+              page: currentPage,
+              pagesize: pageSize,
+            }
           });
-          setListProduct(response.data);
-          setTotalPages(Math.ceil(response.data.length / pageSize));
+          setListProduct(response.data.products);
+          setTotalPages(Math.ceil(response.data.totalProducts / parseInt(pageSize)));
         } else {
           const response = await axios.get('http://localhost:3000/product/getproducts', {
             params: {
@@ -45,33 +98,46 @@ const ListProduct = ({ searchResults, setSearchResults, searchTerm }) => {
             }
           });
           setListProduct(response.data.products);
-          setTotalPages(Math.ceil(response.data.totalProducts / pageSize));
+          setTotalPages(Math.ceil(response.data.totalProducts / parseInt(pageSize)));
         }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
     fetchProducts();
-
-  }, [groupName, searchResults, currentPage]);
+  }, [groupName, searchResults, currentPage, sortBy, priceFilter]);
 
   const handleProductClick = (productId) => {
     navigate(`/productdetail/${productId}`);
   };
 
   const handleGroupClick = (group) => {
+    setPriceFilter('');
+    setSortBy('default');
     setGroupName(group);
     setSearchResults([]);
     setCurrentPage(1);
   };
 
+  const handleSortChange = (e) => {
+    const newSortValue = e.target.value;
+    setSortBy(newSortValue);
+    setPriceFilter('');
+    setCurrentPage(1);
+    console.log("Current groupName and sort:", groupName, sortBy);
+  };
+
+  const handlePriceFilter = (e) => {
+    const newPriceValue = e.target.value;
+    setPriceFilter(newPriceValue);
+    setSortBy('default');
+    setCurrentPage(1);
+    console.log("Current groupName and price:", groupName, priceFilter);
+  };
+
   console.log("group: ", groupName);
 
   const displayProducts = (searchResults && searchResults.length) ? searchResults : listProduct;
-
-  console.log("display product:", displayProducts);
-  console.log("search result:", searchResults);
-  console.log("search query:", searchTerm);
 
   const groupTitleMap = {
     N1: "CHẾ PHẨM SINH HỌC",
@@ -109,14 +175,15 @@ const ListProduct = ({ searchResults, setSearchResults, searchTerm }) => {
       </nav>
 
       {/* Breadcrumb */}
-      <div className="flex items-center text-sm mb-6">
-        <a href="/" className="text-gray-600 hover:text-red-600">
-          Trang chủ
-        </a>
-        <span className="mx-2 text-gray-400">/</span>
-        <span className="text-gray-900">{currentGroupTitle}</span>
-      </div>
-
+      {searchResults.length === 0 ? (
+        <div className="flex items-center text-sm mb-6">
+          <a href="/" className="text-gray-600 hover:text-red-600">
+            Trang chủ
+          </a>
+          <span className="mx-2 text-gray-400">/</span>
+          <span className="text-gray-900">{currentGroupTitle}</span>
+        </div>
+      ) : null}
 
       {/* Header and Filters */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
@@ -125,53 +192,56 @@ const ListProduct = ({ searchResults, setSearchResults, searchTerm }) => {
             Kết quả tìm kiếm cho <strong>"{searchTerm}"</strong>
           </span>
         ) : (
-        <>
-          <h1 className="text-2xl font-bold text-gray-900">{currentGroupTitle}</h1>
+          <>
+            <h1 className="text-2xl font-bold text-gray-900">{currentGroupTitle}</h1>
 
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Filter Button */}
-            <div className="flex items-center gap-2 px-4 py-2 text-sm">
-              {<CiFilter size={24} />}
-              BỘ LỌC
-            </div>
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Filter Button */}
+              <div className="flex items-center gap-2 px-4 py-2 text-sm">
+                {<CiFilter size={24} />}
+                BỘ LỌC
+              </div>
 
-            {/* Price Filter */}
-            <div className="relative">
-              <select
-                value={priceFilter}
-                onChange={(e) => setPriceFilter(e.target.value)}
-                className="appearance-none w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-md pr-8 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              >
-                <option value="">Lọc giá</option>
-                <option value="low">Giá thấp đến cao</option>
-                <option value="high">Giá cao đến thấp</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
+              {/* Price Filter */}
+              <div className="relative">
+                <select
+                  value={priceFilter}
+                  onChange={handlePriceFilter}
+                  className="appearance-none w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-md pr-8 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="">Lọc giá</option>
+                  {priceRanges.map((range) => (
+                    <option key={range.id} value={range.value}>
+                      {range.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Sort */}
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={handleSortChange}
+                  className="appearance-none w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-md pr-8 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="default">Sắp xếp</option>
+                  <option value="1">Giá tăng dần</option>
+                  <option value="-1">Giá giảm dần</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
               </div>
             </div>
-
-            {/* Sort */}
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-md pr-8 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              >
-                <option value="default">Sắp xếp</option>
-                <option value="1">Giá tăng dần</option>
-                <option value="-1">Giá giảm dần</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </>
+          </>
         )}
       </div>
 

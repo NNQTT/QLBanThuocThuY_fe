@@ -33,6 +33,12 @@ function Home() {
     navigate(`/productdetail/${productId}`);
   };
 
+  // Hàm xử lý khi click vào nhóm sản phẩm
+  const handleGroupClick = (group) => {
+    // Chuyển hướng đến trang ListProduct với tham số group trên URL
+    navigate(`/listproduct?group=${group}`);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Navigation */}
@@ -45,9 +51,10 @@ function Home() {
             </a>
           </li>
           {navItems.map((item) => (
-            <li key={item.id} className='border border-gray-300 rounded-md px-8 hover:border-red-600 text-center flex-1'>
+            <li key={item.id} className='border border-gray-300 rounded-md px-8 hover:border-red-600 text-center flex-1' onClick={() => handleGroupClick(item.group)}>
               <a
                 href="#"
+                onClick={() => handleGroupClick(item.group)}
                 className="inline-block px-4 py-2 text-sm hover:text-red-600 transition-colors"
               >
                 {item.name}
