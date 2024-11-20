@@ -3,6 +3,10 @@ import axios from 'axios'
 import { Edit, Save, X, ChevronsUpDown, Search, Upload, User } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 
+const getImagePath = (maThuoc, imageName) => {
+  return `/src/assets/uploads/${maThuoc}/${imageName}`;
+};
+
 const DetailProduct = () => {
   const { maThuoc } = useParams()
   const [product, setProduct] = useState(null)
@@ -18,6 +22,7 @@ const DetailProduct = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationType, setNotificationType] = useState(''); // 'success' hoặc 'error'
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -100,30 +105,160 @@ const DetailProduct = () => {
 
   const handleSave = async () => {
     try {
-      await axios.put(`http://localhost:3000/admin/updatethuoc`, product);
-      setIsEditing(false);
+        console.log("Dữ liệu gửi đi:", product); // Log để kiểm tra
+
+        const response = await axios.put(`http://localhost:3000/admin/updatethuoc/${product.MaThuoc}`, {
+            TenThuoc: product.TenThuoc,
+            GiaBan: product.GiaBan,
+            SoLuong: product.SoLuong,
+            DangBaoChe: product.DangBaoChe,
+            QCDongGoi: product.QCDongGoi,
+            CongDung: product.CongDung,
+            AnhDaiDien: product.AnhDaiDien,
+            TrangThai: product.TrangThai,
+            MaNhomThuoc: product.MaNhomThuoc,
+            MaLoai: product.MaLoai
+        });
+
+        console.log("Response:", response.data); // Log response
+
+        if (response.data.message === 'Cập nhật thuốc thành công') {
+            setIsEditing(false);
+            setNotificationMessage('Cập nhật thông tin thuốc thành công!');
+            setNotificationType('success');
+            setShowNotification(true);
+        }
+        
+        setTimeout(() => {
+            setShowNotification(false);
+        }, 3000);
+        
+    } catch (error) {
+        console.error('Error updating product:', error);
+        setNotificationMessage('Có lỗi xảy ra khi cập nhật thông tin!');
+        setNotificationType('error');
+        setShowNotification(true);
+        
+        setTimeout(() => {
+            setShowNotification(false);
+        }, 3000);
+    }
+  };
+
+  // Thêm hàm xử lý xóa hình ảnh
+  const handleDeleteImage = async (tenHinhAnh) => {
+    try {
+      await axios.delete(`http://localhost:3000/admin/deletedanhmucha/${product.MaThuoc}/${tenHinhAnh}`);
       
+      // Cập nhật state sau khi xóa
+      setProduct(prev => ({
+        ...prev,
+        danhMucHinhAnh: prev.danhMucHinhAnh.filter(img => img.tenHinhAnh !== tenHinhAnh)
+      }));
+
       // Hiển thị thông báo thành công
-      setNotificationMessage('Cập nhật thông tin thuốc thành công!');
+      setNotificationMessage('Xóa hình ảnh thành công!');
       setNotificationType('success');
       setShowNotification(true);
       
-      // Tự động ẩn thông báo sau 3 giây
       setTimeout(() => {
         setShowNotification(false);
       }, 3000);
-      
+
     } catch (error) {
-      console.error('Error updating product:', error);
-      
-      // Hiển thị thông báo lỗi
-      setNotificationMessage('Có lỗi xảy ra khi cập nhật thông tin!');
+      console.error('Error deleting image:', error);
+      setNotificationMessage('Có lỗi xảy ra khi xóa hình ảnh!');
       setNotificationType('error');
       setShowNotification(true);
       
       setTimeout(() => {
         setShowNotification(false);
       }, 3000);
+    }
+  };
+
+  // Thêm hàm xử lý upload ảnh
+  const handleImageUpload = async (event) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      // Xử lý từng file một
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        // Upload ảnh lên server (giả sử bạn có API upload ảnh)
+        // const uploadResponse = await axios.post('http://localhost:3000/admin/upload', formData);
+        
+        // Thêm vào danh mục hình ảnh
+        await axios.post('http://localhost:3000/admin/postdanhmucha', {
+          maThuoc: product.MaThuoc,
+          tenHinhAnh: file.name,
+        });
+
+        // Cập nhật state product
+        setProduct(prev => ({
+          ...prev,
+          danhMucHinhAnh: [
+            ...(prev.danhMucHinhAnh || []),
+            { tenHinhAnh: file.name }
+          ]
+        }));
+
+        // Hiển thị thông báo thành công
+        setNotificationMessage('Thêm hình ảnh thành công!');
+        setNotificationType('success');
+        setShowNotification(true);
+        
+        setTimeout(() => {
+          setShowNotification(false);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      setNotificationMessage('Có lỗi xảy ra khi tải ảnh lên!');
+      setNotificationType('error');
+      setShowNotification(true);
+      
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 3000);
+    }
+  };
+
+  const handleUpdateThanhPhan = async () => {
+    try {
+        const response = await axios.put('http://localhost:3000/admin/updatethuoctp', {
+            maThuoc: product.MaThuoc,
+            thanhPhan: selectedThanhPhan // Mảng các thành phần đã chọn
+        });
+
+        if (response.data.message === 'Cập nhật thành phần thuốc thành công') {
+            // Cập nhật state local
+            setProduct(prev => ({
+                ...prev,
+                thanhPhan: selectedThanhPhan
+            }));
+
+            setNotificationMessage('Cập nhật thành phần thành công!');
+            setNotificationType('success');
+        }
+        
+        setShowNotification(true);
+        setTimeout(() => {
+            setShowNotification(false);
+        }, 3000);
+
+    } catch (error) {
+        console.error('Error updating ingredients:', error);
+        setNotificationMessage('Có lỗi xảy ra khi cập nhật thành phần!');
+        setNotificationType('error');
+        setShowNotification(true);
+        
+        setTimeout(() => {
+            setShowNotification(false);
+        }, 3000);
     }
   };
 
@@ -189,8 +324,12 @@ const DetailProduct = () => {
             <label className="block text-sm font-medium text-[#4A4E69] mb-2">Ảnh đại diện</label>
             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-[#E76F51] border-dashed rounded-md">
               <div className="space-y-1 text-center">
-                {product.AnhDaiDien ? (
-                  <img src={product.AnhDaiDien} alt="Ảnh đại diện" className="mx-auto h-64 w-64 object-cover" />
+                {product?.AnhDaiDien ? (
+                  <img 
+                    src={getImagePath(product.MaThuoc, product.AnhDaiDien)} 
+                    alt="Ảnh đại diện" 
+                    className="mx-auto h-64 w-64 object-cover" 
+                  />
                 ) : (
                   <User className="mx-auto h-12 w-12 text-[#E76F51]" />
                 )}
@@ -211,36 +350,48 @@ const DetailProduct = () => {
 
           <div>
             <label className="block text-sm font-medium text-[#4A4E69] mb-2">Danh mục hình ảnh</label>
-            {Array.isArray(product?.danhMucHinhAnh) && product.danhMucHinhAnh[0] && (
-              <div className="grid grid-cols-3 gap-2">
-                {product.danhMucHinhAnh.map((img, index) => (
+            <div className="grid grid-cols-3 gap-2">
+              {/* Hiển thị ảnh đã có */}
+              {Array.isArray(product?.danhMucHinhAnh) && product.danhMucHinhAnh.map((img, index) => (
+                <div key={index} className="relative group">
                   <img 
-                    key={index} 
-                    src={img.tenHinhAnh} 
+                    src={getImagePath(product.MaThuoc, img.tenHinhAnh)} 
                     alt={`Ảnh ${index + 1}`} 
                     className="w-full h-24 object-cover rounded-md"
                   />
-                ))}
-                {isEditing && (
-                  <div className="flex items-center justify-center w-full h-24 border-2 border-[#E76F51] border-dashed rounded-md">
-                    <label
-                      htmlFor="danhMucHinhAnh"
-                      className="cursor-pointer text-[#E76F51]"
+                  {isEditing && (
+                    <button
+                      onClick={() => handleDeleteImage(img.tenHinhAnh)}
+                      className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
                     >
-                      <Upload className="mx-auto h-8 w-8" />
-                      <span className="sr-only">Tải lên nhiều hình ảnh</span>
-                      <input 
-                        id="danhMucHinhAnh" 
-                        name="danhMucHinhAnh" 
-                        type="file" 
-                        multiple 
-                        className="sr-only" 
-                      />
-                    </label>
-                  </div>
-                )}
-              </div>
-            )}
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {/* Nút upload luôn hiển thị khi đang trong chế độ chỉnh sửa */}
+              {isEditing && (
+                <div className="flex items-center justify-center w-full h-24 border-2 border-[#E76F51] border-dashed rounded-md">
+                  <label
+                    htmlFor="danhMucHinhAnh"
+                    className="cursor-pointer text-[#E76F51] hover:text-[#F4A261] transition-colors duration-200"
+                  >
+                    <Upload className="mx-auto h-8 w-8" />
+                    <span className="block text-sm mt-1">Tải lên ảnh</span>
+                    <input 
+                      id="danhMucHinhAnh" 
+                      name="danhMucHinhAnh" 
+                      type="file" 
+                      multiple 
+                      className="sr-only"
+                      onChange={handleImageUpload}
+                      accept="image/*"
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
