@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { Edit, Save, X, ChevronsUpDown, Search, Upload, User } from 'lucide-react'
-import { useParams } from 'react-router-dom'
+import { Edit, Save, X, ChevronsUpDown, Search, Upload, User, History } from 'lucide-react'
+import { useParams, useNavigate } from 'react-router-dom'
 
 const getImagePath = (maThuoc, imageName) => {
   return `/src/assets/uploads/${maThuoc}/${imageName}`;
@@ -23,6 +23,8 @@ const DetailProduct = () => {
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationType, setNotificationType] = useState(''); // 'success' hoặc 'error'
   const [selectedFiles, setSelectedFiles] = useState([]);
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -105,37 +107,49 @@ const DetailProduct = () => {
 
   const handleSave = async () => {
     try {
-        console.log("Dữ liệu gửi đi:", product); // Log để kiểm tra
+        const tenTaiKhoan = localStorage.getItem('adminUsername');
+        console.log('TenTaiKhoan trước khi gửi:', tenTaiKhoan);
 
-        const response = await axios.put(`http://localhost:3000/admin/updatethuoc/${product.MaThuoc}`, {
-            TenThuoc: product.TenThuoc,
-            GiaBan: product.GiaBan,
-            SoLuong: product.SoLuong,
-            DangBaoChe: product.DangBaoChe,
-            QCDongGoi: product.QCDongGoi,
-            CongDung: product.CongDung,
-            AnhDaiDien: product.AnhDaiDien,
-            TrangThai: product.TrangThai,
-            MaNhomThuoc: product.MaNhomThuoc,
-            MaLoai: product.MaLoai
-        });
+        if (!tenTaiKhoan) {
+            const userResponse = await axios.get('http://localhost:3000/api/getCurrentUser', {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                }
+            });
+            if (userResponse.data.tentaikhoan) {
+                localStorage.setItem('adminUsername', userResponse.data.tentaikhoan);
+            } else {
+                throw new Error('Không tìm thấy thông tin người dùng');
+            }
+        }
 
-        console.log("Response:", response.data); // Log response
+        const dataToSend = {
+            ...product,
+            TenTaiKhoan: tenTaiKhoan || localStorage.getItem('adminUsername')
+        };
+        console.log('Data gửi đi:', dataToSend);
 
+        const response = await axios.put(
+            `http://localhost:3000/admin/updatethuoc/${product.MaThuoc}`, 
+            dataToSend
+        );
+
+        console.log('Response:', response.data);
+        
         if (response.data.message === 'Cập nhật thuốc thành công') {
             setIsEditing(false);
             setNotificationMessage('Cập nhật thông tin thuốc thành công!');
             setNotificationType('success');
-            setShowNotification(true);
         }
         
+        setShowNotification(true);
         setTimeout(() => {
             setShowNotification(false);
         }, 3000);
         
     } catch (error) {
         console.error('Error updating product:', error);
-        setNotificationMessage('Có lỗi xảy ra khi cập nhật thông tin!');
+        setNotificationMessage(error.message || 'Có lỗi xảy ra khi cập nhật thông tin!');
         setNotificationType('error');
         setShowNotification(true);
         
@@ -530,7 +544,7 @@ const DetailProduct = () => {
             >
               {product?.thanhPhan && product.thanhPhan[0]
                 ? `${product.thanhPhan.filter(Boolean).length} thành phần đã chọn`
-                : "Chọn thành phần"
+                : "Chn thành phần"
               }
               <ChevronsUpDown className="h-4 w-4 text-gray-400" />
             </button>

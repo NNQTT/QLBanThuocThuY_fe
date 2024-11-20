@@ -19,11 +19,13 @@ const LoginAdmin = () => {
         };
         try {
             const res = await axios.post('http://localhost:3000/api/loginAdmin', payload);
+            console.log('Login response:', res.data); // Debug
 
-            console.log(res);
             if (res.data.success) {
-                // Save session flag
+                // Lưu trực tiếp username từ response
                 localStorage.setItem('accessToken', res.data.accessToken);
+                localStorage.setItem('adminUsername', res.data.user.tentaikhoan); // Lưu username
+                console.log('Saved username:', res.data.user.tentaikhoan); // Debug
 
                 message.success('Login successfully');
                 navigate('/admin');
@@ -31,12 +33,8 @@ const LoginAdmin = () => {
                 message.warning('Username or password is incorrect');
             }
         } catch (error) {
-            console.error(error);
-            if (error.response && error.response.status === 404) {
-                message.error('Username or password is incorrect');
-            } else {
-                message.error('An error occurred. Please try again.');
-            }
+            console.error('Login error:', error);
+            message.error('An error occurred. Please try again.');
         }
     };
 

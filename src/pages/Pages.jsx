@@ -15,6 +15,8 @@ import ListProduct from '../components/HomePage/ListProduct';
 import Checkout from '../components/Cart/Checkout';
 import DetailProduct from '../components/Admin/DetailProduct';
 import AboutUs from '../components/HomePage/AboutUs';
+import LichSuThuoc from '../components/Admin/LichSuThuoc';
+import LichSuThuocById from '../components/Admin/LichSuThuocById';
 
 
 function Pages() {
@@ -37,6 +39,8 @@ function Pages() {
                     <Route path='orderlist' element={<OrderList/>}/>
                     <Route path='addproduct' element={<AddProduct/>}/>
                     <Route path='detailproduct/:maThuoc' element={<DetailProduct />} />
+                    <Route path='lichsuthuoc' element={<LichSuThuoc />} />
+                    <Route path='lichsuthuoc/:maThuoc' element={<LichSuThuocById />} />
                 </Route>
                 <Route path='/adminlogin' element={<LoginAdmin />}>
                 </Route>
