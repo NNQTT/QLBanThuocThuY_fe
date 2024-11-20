@@ -143,7 +143,6 @@ const AddProduct = () => {
     selectedFiles.forEach((file, index) => {
       formData.append(`galleryImages[${index}]`, file);
     });
-
     
     try {
       await axios.post('http://localhost:3000/admin/postthuoc', productData, {

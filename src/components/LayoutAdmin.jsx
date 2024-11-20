@@ -43,7 +43,7 @@ const LayoutAdmin = () => {
 
         authenticateAdmin();
 
-        if(!localStorage.getItem('accessToken')) {
+        if (!localStorage.getItem('accessToken')) {
             navigate('/adminlogin');
         }
     }, []);
@@ -113,11 +113,10 @@ const LayoutAdmin = () => {
                     <div className="bg-[#FFE5D9] p-6 rounded-lg shadow-md">
                         <p className="text-[#4A4E69]"><Outlet /></p>
                     </div> */}
-                    <Outlet/>
+                    <Outlet />
                 </main>
             </div>
         </div>
     );
 }
-
 export default LayoutAdmin;

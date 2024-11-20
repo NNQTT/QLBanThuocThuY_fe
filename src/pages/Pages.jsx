@@ -36,7 +36,7 @@ function Pages() {
                     <Route index element={<Admin />} />
                     <Route path='orderlist' element={<OrderList/>}/>
                     <Route path='addproduct' element={<AddProduct/>}/>
-                    <Route path='detailproduct' element={<DetailProduct/>}/>
+                    <Route path='detailproduct/:maThuoc' element={<DetailProduct />} />
                 </Route>
                 <Route path='/adminlogin' element={<LoginAdmin />}>
                 </Route>
