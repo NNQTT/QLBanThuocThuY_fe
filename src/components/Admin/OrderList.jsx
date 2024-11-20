@@ -1,17 +1,103 @@
 import React, { useEffect, useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, Eye, Edit, Filter, RefreshCcw, ChevronDown, X, Calendar, Package, DollarSign, Tag, Phone, MapPin } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Eye, Edit, Filter, RefreshCcw, ChevronDown, ChevronUp, X, Calendar, Package, DollarSign, Tag, Phone, MapPin} from 'lucide-react';
 import axios from 'axios';
 
 const OrderList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [ordersPerPage] = useState(6);
+    const [ordersPerPage] = useState(7);
     const [sortColumn, setSortColumn] = useState('id');
     const [sortDirection, setSortDirection] = useState('asc');
     const [orders, setOrders] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [dateFilter, setDateFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
+
+    const getDateRange = (filter) => {
+        const today = new Date();
+        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+        switch (filter) {
+            case 'today':
+                return { start: startOfDay, end: endOfDay };
+
+            case 'yesterday': {
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                return {
+                    start: new Date(yesterday.setHours(0, 0, 0, 0)),
+                    end: new Date(yesterday.setHours(23, 59, 59, 999))
+                };
+            }
+
+            case 'thisWeek': {
+                const first = today.getDate() - today.getDay();
+                return {
+                    start: new Date(today.setDate(first)),
+                    end: endOfDay
+                };
+            }
+
+            case 'lastWeek': {
+                const first = today.getDate() - today.getDay() - 7;
+                const last = first + 6;
+                return {
+                    start: new Date(new Date().setDate(first)),
+                    end: new Date(new Date().setDate(last))
+                };
+            }
+
+            case 'thisMonth': {
+                return {
+                    start: new Date(today.getFullYear(), today.getMonth(), 1),
+                    end: endOfDay
+                };
+            }
+
+            case 'lastMonth': {
+                return {
+                    start: new Date(today.getFullYear(), today.getMonth() - 1, 1),
+                    end: new Date(today.getFullYear(), today.getMonth(), 0)
+                };
+            }
+
+            case 'thisQuarter': {
+                const quarter = Math.floor(today.getMonth() / 3);
+                return {
+                    start: new Date(today.getFullYear(), quarter * 3, 1),
+                    end: endOfDay
+                };
+            }
+
+            case 'lastQuarter': {
+                const quarter = Math.floor(today.getMonth() / 3) - 1;
+                return {
+                    start: new Date(today.getFullYear(), quarter * 3, 1),
+                    end: new Date(today.getFullYear(), (quarter + 1) * 3, 0)
+                };
+            }
+
+            case 'thisYear': {
+                return {
+                    start: new Date(today.getFullYear(), 0, 1),
+                    end: endOfDay
+                };
+            }
+
+            case 'lastYear': {
+                return {
+                    start: new Date(today.getFullYear() - 1, 0, 1),
+                    end: new Date(today.getFullYear() - 1, 11, 31)
+                };
+            }
+
+            default:
+                return null;
+        }
+    };
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -28,13 +114,34 @@ const OrderList = () => {
     }, []);
 
     const filteredAndSortedOrders = orders
-        .filter(order => typeof order.MaDonHang === 'number' && order.MaDonHang.toString().includes(searchTerm.toLowerCase()))
-        .sort((a, b) => {
-            if (sortColumn === 'id') {
-                return sortDirection === 'desc' ? a.MaDonHang - b.MaDonHang : b.MaDonHang - a.MaDonHang;
+        .filter(order => {
+            const matchesSearch = order.MaDonHang.toString().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === 'all' || order.TrangThaiHD === statusFilter;
+            let matchesDate = true;
+            if (dateFilter !== 'all') {
+                const dateRange = getDateRange(dateFilter);
+                if (dateRange) {
+                    const orderDate = new Date(order.NgayLap);
+                    matchesDate = orderDate >= dateRange.start && orderDate <= dateRange.end;
+                }
             }
-            // Thêm điều kiện sắp xếp cho các cột khác nếu cần
-            return 0;
+            return matchesSearch && matchesStatus && matchesDate;
+        })
+        .sort((a, b) => {
+            const direction = sortDirection === 'desc' ? 1 : -1;
+            
+            switch (sortColumn) {
+                case 'id':
+                    return direction * (a.MaDonHang - b.MaDonHang);
+                case 'date':
+                    return direction * (new Date(a.NgayLap) - new Date(b.NgayLap));
+                case 'total':
+                    return direction * (a.TongTien - b.TongTien);
+                case 'status':
+                    return direction * a.TrangThaiHD.localeCompare(b.TrangThaiHD);
+                default:
+                    return 0;
+            }
         });
 
     const indexOfLastOrder = currentPage * ordersPerPage;
@@ -287,7 +394,7 @@ const OrderList = () => {
     return (
         <>
             <div className="bg-white mx-10 overflow-hidden transition-all duration-300 ease-in-out">
-                <div className="p-8 flex flex-col sm:flex-row justify-between items-center border-b border-gray-200">
+                <div className="p-6 flex flex-col sm:flex-row justify-between items-center border-b border-gray-200">
                     <h3 className="text-3xl font-bold text-[#22223B] md:mb-0">Danh sách đơn hàng</h3>
                     <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
                         <div className="relative">
@@ -300,13 +407,48 @@ const OrderList = () => {
                             />
                             <Search className="absolute left-3 top-2.5 h-5 w-5 text-[#E76F51]" />
                         </div>
-                        <div className="flex space-x-2">
-                            <button className="p-2 bg-[#F4A261] text-white rounded-full hover:bg-[#E76F51] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E76F51] focus:ring-opacity-50 transform hover:scale-105">
-                                <Filter size={20} />
-                            </button>
-                            <button className="p-2 bg-[#F4A261] text-white rounded-full hover:bg-[#E76F51] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E76F51] focus:ring-opacity-50 transform hover:scale-105">
-                                <RefreshCcw size={20} />
-                            </button>
+                    </div>
+                </div>
+                <div className="flex flex-wrap justify-end items-center gap-4 my-4">
+                    <div className="relative">
+                        <select
+                            value={dateFilter}
+                            onChange={(e) => setDateFilter(e.target.value)}
+                            className="appearance-none w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-md pr-8 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E76F51] focus:border-transparent"
+                        >
+                            <option value="all">Tất cả thời gian</option>
+                            <option value="today">Hôm nay</option>
+                            <option value="yesterday">Hôm qua</option>
+                            <option value="thisWeek">Trong tuần này</option>
+                            <option value="lastWeek">Tuần trước</option>
+                            <option value="thisMonth">Trong tháng này</option>
+                            <option value="lastMonth">Tháng trước</option>
+                            <option value="thisQuarter">Từ đầu quý đến nay</option>
+                            <option value="lastQuarter">Quý trước</option>
+                            <option value="thisYear">Từ đầu năm đến nay</option>
+                            <option value="lastYear">Năm ngoái</option>
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <ChevronDown size={16} className="text-gray-400" />
+                        </div>
+                    </div>
+
+                    <div className="relative">
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="appearance-none w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-md pr-8 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E76F51] focus:border-transparent"
+                        >
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="Đang xử lý">Đang xử lý</option>
+                            <option value="Đang vận chuyển">Đang vận chuyển</option>
+                            <option value="Đã thanh toán">Đã thanh toán</option>
+                            <option value="Đã hủy">Đã hủy</option>
+                            <option value="Đã hoàn tiền">Đã hoàn tiền</option>
+                            <option value="Đang chuẩn bị">Đang chuẩn bị</option>
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <ChevronDown size={16} className="text-gray-400" />
                         </div>
                     </div>
                 </div>
@@ -314,25 +456,45 @@ const OrderList = () => {
                     <table className="w-full">
                         <thead className="bg-[#FFE5D9] text-[#4A4E69]">
                             <tr>
-                                {['id', 'date', 'total', 'status'].map((column) => (
+                                {[
+                                    { id: 'id', label: 'Mã đơn hàng' },
+                                    { id: 'date', label: 'Ngày đặt hàng' },
+                                    { id: 'total', label: 'Tổng tiền' },
+                                    { id: 'status', label: 'Trạng thái' },
+                                    { id: 'actions', label: 'Thao tác', sortable: false }
+                                ].map((column) => (
                                     <th
-                                        key={column}
-                                        className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider cursor-pointer hover:bg-[#FFD6BA] transition-colors duration-200"
-                                        onClick={() => handleSort(column)}
+                                        key={column.id}
+                                        className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${
+                                            column.sortable !== false ? 'cursor-pointer hover:bg-[#FFD6BA] transition-colors duration-200' : ''
+                                        }`}
+                                        onClick={() => column.sortable !== false && handleSort(column.id)}
                                     >
-                                        <div className="flex items-center">
-                                            {column === 'id' ? 'Mã đơn hàng' :
-                                                column === 'date' ? 'Ngày đặt hàng' :
-                                                    column === 'total' ? 'Tổng tiền' : 'Trạng thái'}
-                                            <ChevronDown
-                                                size={16}
-                                                className={`ml-1 transform transition-transform duration-200 ${sortColumn === column && sortDirection === 'desc' ? 'rotate-180' : ''
-                                                    }`}
-                                            />
+                                        <div className="flex items-center space-x-1">
+                                            <span>{column.label}</span>
+                                            {column.sortable !== false && (
+                                                <div className="flex flex-col">
+                                                    <ChevronUp
+                                                        size={12}
+                                                        className={`${
+                                                            sortColumn === column.id && sortDirection === 'asc'
+                                                                ? 'text-[#E76F51]'
+                                                                : 'text-gray-400'
+                                                        }`}
+                                                    />
+                                                    <ChevronDown
+                                                        size={12}
+                                                        className={`${
+                                                            sortColumn === column.id && sortDirection === 'desc'
+                                                                ? 'text-[#E76F51]'
+                                                                : 'text-gray-400'
+                                                        }`}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     </th>
                                 ))}
-                                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">

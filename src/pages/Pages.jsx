@@ -14,6 +14,7 @@ import AddProduct from '../components/Admin/AddProduct';
 import ListProduct from '../components/HomePage/ListProduct';
 import Checkout from '../components/Cart/Checkout';
 import DetailProduct from '../components/Admin/DetailProduct';
+import AboutUs from '../components/HomePage/AboutUs';
 
 
 function Pages() {
@@ -27,6 +28,7 @@ function Pages() {
                     <Route path='/productdetail/:productId' element={<ProductDetail />} />
                     <Route path='/cart/' element={<Cart />}></Route>
                     <Route path='/listproduct' element={<ListProduct searchResults={searchResults} setSearchResults={setSearchResults} searchTerm={searchTerm}/>}></Route>
+                    <Route path='/aboutus' element={<AboutUs/>}/>
                 </Route>
                 <Route path='/login' element={<Login />}></Route>
                 <Route path='/register' element={<Register />}></Route>

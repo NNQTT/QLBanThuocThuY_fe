@@ -14,7 +14,7 @@ const { Text } = Typography
 export default function ProductDetail() {
     const { productId } = useParams()
     const [quantity, setQuantity] = useState(1)
-    const [product, setProduct] = useState({})
+    const [product, setProduct] = useState([])
     const [listProduct, setListProduct] = useState([])
     const [listProductRecently, setListProductRecently] = useState([])
     const [listAlbumProduct, setListAlbumProduct] = useState([])
@@ -44,7 +44,7 @@ export default function ProductDetail() {
                 })
                 console.log('res:', res.data)
                 if (!res.data.success) {
-                    message.error('Thêm vào giỏ hàng thất bại')
+                    message.error(res.data.message)
                     return
                 }
             }
@@ -83,9 +83,20 @@ export default function ProductDetail() {
     }
 
     const handleCarouselChange = (current, carouselRef, setShowLeft, setShowRight) => {
-        setShowLeft(current > 0)
-        setShowRight(current < carouselRef.current.innerSlider.state.slideCount - 4)
+        if (!carouselRef.current) return;
+
+        const totalItems = carouselRef.current.innerSlider.state.slideCount;
+        const slidesToShow = 4;
+        const maxSlide = totalItems - slidesToShow;
+
+        setShowLeft(current > 0);
+        setShowRight(current < maxSlide);
     }
+
+    const handleProductClick = (productId) => {
+        navigate(`/productdetail/${productId}`);
+    }
+
 
     const handlePrev = (carouselRef, setShowLeft, setShowRight) => {
         carouselRef.current?.prev()
@@ -105,6 +116,7 @@ export default function ProductDetail() {
 
     useEffect(() => {
         const fetchProductDetail = async () => {
+            window.scrollTo(0, 0)
             try {
                 const response = await axios.get(`http://localhost:3000/product/getProductById/${productId}`)
                 setProduct(response.data)
@@ -131,7 +143,12 @@ export default function ProductDetail() {
                     manhomthuoc: manhomthuoc
                 }
                 const response = await axios.get(`http://localhost:3000/product/getproductrelated`, { params: payload })
-                setListProduct(response.data.data)
+                setListProduct(response.data.data);
+                setShowLeftArrow(false);
+                setShowRightArrow(response.data.data.length > 4);
+                setShowLeftArrow1(false);
+                setShowRightArrow1(response.data.data.length > 4);
+
             } catch (error) {
                 console.error('Error fetching related products:', error)
             }
@@ -168,9 +185,7 @@ export default function ProductDetail() {
         fetchAlbumProducts()
     }, [productId])
 
-    const handleProductClick = (productId) => {
-        navigate(`/productdetail/${productId}`)
-    }
+
 
     return (
         <div className='container mx-auto px-4 py-8'>
@@ -181,7 +196,7 @@ export default function ProductDetail() {
                         <div className='relative w-full max-w-[500px] items-center justify-center'>
                             <Carousel
                                 ref={carouselRef2}
-                                autoplay={true}
+                                // autoplay={true}
                                 slidesToScroll={1}
                                 className='rounded-lg'
                                 beforeChange={(_, next) => handleCarouselChange(next, carouselRef2, setShowLeftArrow2, setShowRightArrow2)}
@@ -266,46 +281,70 @@ export default function ProductDetail() {
                             {Number(product.GiaBan).toLocaleString()}₫
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <span className="text-gray-700">Chọn số lượng:</span>
-                            <div className="flex items-center border rounded">
-                                <Button
-                                    icon={<MinusOutlined />}
-                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="text-gray-600 hover:text-red-600"
-                                />
-                                <InputNumber
-                                    min={1}
-                                    value={quantity}
-                                    onChange={(value) => setQuantity(value)}
-                                    className="w-16 text-center border-none"
-                                />
-                                <Button
-                                    icon={<PlusOutlined />}
-                                    onClick={() => setQuantity(quantity + 1)}
-                                    className="text-gray-600 hover:text-red-600"
-                                />
-                            </div>
-                        </div>
-
                         <div className="flex gap-4">
                             {product.TrangThai === "Còn hàng" ? (
                                 <>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-gray-700">Chọn số lượng:</span>
+                                        <div className="flex items-center border rounded">
+                                            <Button
+                                                icon={<MinusOutlined />}
+                                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                                className="text-gray-600 hover:text-red-600"
+                                            />
+                                            <span
+                                                min={1}
+                                                value={quantity}
+                                                onChange={(value) => setQuantity(value)}
+                                                className="w-10 text-center border-none"
+                                            >
+                                                {quantity}
+                                            </span>
+
+                                            <Button
+                                                icon={<PlusOutlined />}
+                                                onClick={() => setQuantity(quantity + 1)}
+                                                className="text-gray-600 hover:text-red-600"
+                                            />
+                                        </div>
+                                    </div>
                                     <Button
                                         onClick={handleAddToCart}
                                         icon={<ShoppingCartOutlined />}
-                                        className="flex-1 h-12 bg-orange-500 hover:bg-orange-600 text-white border-none"
+                                        className="flex-1 h-12 bg-orange-500 hover:!bg-orange-600 hover:!text-white text-white border-none"
                                     >
-                                        THÊM VÀO GIỎ
-                                    </Button>
-                                    <Button className="flex-1 h-12 bg-red-600 hover:bg-red-700 text-white border-none">
-                                        MUA NGAY
+                                        THÊM VÀO GIỎ HÀNG
                                     </Button>
                                 </>
                             ) : (
-                                <Button disabled className="flex-1 h-12 bg-gray-200 text-gray-500 cursor-not-allowed">
-                                    TẠM HẾT HÀNG
-                                </Button>
+                                <>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-gray-700">Chọn số lượng:</span>
+                                        <div className="flex items-center border rounded">
+                                            <Button
+                                                icon={<MinusOutlined />}
+                                                className="text-gray-600 cursor-not-allowed"
+                                            />
+                                            <span
+                                                min={1}
+                                                value={quantity}
+                                                onChange={(value) => setQuantity(value)}
+                                                className="w-10 text-center border-none"
+                                            >
+                                                {quantity}
+                                            </span>
+
+                                            <Button
+                                                icon={<PlusOutlined />}
+                                                className="text-gray-600 cursor-not-allowed"
+                                            />
+                                        </div>
+                                    </div>
+                                    <Button disabled className="flex-1 h-12 bg-gray-200 text-gray-600 cursor-not-allowed">
+                                        TẠM HẾT HÀNG
+                                    </Button>
+                                </>
+
                             )}
                         </div>
 
@@ -333,51 +372,52 @@ export default function ProductDetail() {
                     <span>Sản phẩm liên quan</span>
                 </div>
 
-                <div className="relative">
-
+                <div className="relative w-full">
                     <Carousel
-                        // arrows
-                        slidesPerRow={4}
+                        ref={carouselRef}
+                        slidesToShow={4}
+                        slidesToScroll={4}
                         infinite={false}
                         dots={false}
-                        rows={1}
-                        ref={carouselRef}
-                        // autoplay={true}
+                        speed={500}
                         className='flex justify-center items-center overflow-hidden'
+                        beforeChange={(current, next) => handleCarouselChange(next, carouselRef, setShowLeftArrow, setShowRightArrow)}
                     >
                         {listProduct.length > 0 && listProduct
                             .filter(product => product.MaThuoc !== productId)
                             .map((product) => (
-                                <div key={product.MaThuoc} className="max-w-[23%] border mx-3 rounded-lg overflow-hidden group flex flex-col" onClick={() => handleProductClick(product.MaThuoc)}>
-                                    <div className="">
-                                        <img
-                                            src={`${import.meta.env.BASE_URL}src/assets/uploads/${product.MaThuoc}/${product.AnhDaiDien}`}
-                                            alt={product.TenThuoc}
-                                            className="w-full h-64 object-cover"
-                                        />
-                                    </div>
-                                    <div className="p-4 flex flex-col flex-1 justify-between">
-                                        <a href='#'>
-                                            <h3 className="text-sm font-medium mb-2 line-clamp-2 group-hover:text-red-600">
-                                                {product.TenThuoc}
-                                            </h3>
-                                        </a>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-lg font-bold">{product.GiaBan.toLocaleString()}₫</span>
+                                <div key={product.MaThuoc} className="px-2">
+                                    <div className="border rounded-lg overflow-hidden group flex flex-col h-full"
+                                        onClick={() => handleProductClick(product.MaThuoc)}>
+                                        <div className="">
+                                            <img
+                                                src={`${import.meta.env.BASE_URL}src/assets/uploads/${product.MaThuoc}/${product.AnhDaiDien}`}
+                                                alt={product.TenThuoc}
+                                                className="w-full h-64 object-cover"
+                                            />
                                         </div>
-                                        {product.TrangThai === "Còn hàng" ? (
-                                            <button
-                                                // onClick={handleAddToCart}
-                                                className='flex-grow mt-4 text-white text-md rounded-md h-10 bg-orange-500 hover:bg-orange-600'
-                                            >
-                                                <ShoppingCartOutlined className='mr-1' />
-                                                CHỌN MUA
-                                            </button>
-                                        ) : (
-                                            <button className="w-full mt-4 px-4 py-2 bg-gray-200 text-gray-500 rounded cursor-not-allowed">
-                                                TẠM HẾT HÀNG
-                                            </button>
-                                        )}
+                                        <div className="p-4 flex flex-col flex-1 justify-between">
+                                            <a href='#'>
+                                                <h3 className="text-sm font-medium mb-2 line-clamp-2 group-hover:text-red-600">
+                                                    {product.TenThuoc}
+                                                </h3>
+                                            </a>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-lg font-bold">{product.GiaBan.toLocaleString()}₫</span>
+                                            </div>
+                                            {product.TrangThai === "Còn hàng" ? (
+                                                <button
+                                                    className='flex-grow mt-4 text-white text-md rounded-md h-10 bg-orange-500 hover:bg-orange-600'
+                                                >
+                                                    <ShoppingCartOutlined className='mr-1' />
+                                                    CHỌN MUA
+                                                </button>
+                                            ) : (
+                                                <button className="w-full mt-4 px-4 py-2 bg-gray-200 text-gray-500 rounded cursor-not-allowed">
+                                                    TẠM HẾT HÀNG
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -386,7 +426,7 @@ export default function ProductDetail() {
                         <Button
                             icon={<LeftOutlined />}
                             onClick={() => handlePrev(carouselRef, setShowLeftArrow, setShowRightArrow)}
-                            className="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md z-10"
+                            className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md"
                             shape="circle"
                         />
                     )}
@@ -394,7 +434,7 @@ export default function ProductDetail() {
                         <Button
                             icon={<RightOutlined />}
                             onClick={() => handleNext(carouselRef, setShowLeftArrow, setShowRightArrow)}
-                            className="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md z-10"
+                            className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md"
                             shape="circle"
                         />
                     )}
@@ -411,66 +451,70 @@ export default function ProductDetail() {
                 <div className="relative">
 
                     <Carousel
-                        // arrows
-                        slidesPerRow={4}
+                        ref={carouselRef1}
+                        slidesToShow={4}
+                        slidesToScroll={4}
                         infinite={false}
                         dots={false}
-                        rows={1}
-                        ref={carouselRef1}
-                        // autoplay={true}
+                        speed={500}
                         className='flex justify-center items-center overflow-hidden'
+                        beforeChange={(current, next) => handleCarouselChange(next, carouselRef1, setShowLeftArrow1, setShowRightArrow1)}
+
                     >
                         {listProductRecently.length > 0 && listProductRecently
                             .filter(product => product.MaThuoc !== productId)
                             .map((product) => (
-                                <div key={product.MaThuoc} className="max-w-[23%] border mx-3 rounded-lg overflow-hidden group flex flex-col" onClick={() => handleProductClick(product.MaThuoc)}>
-                                    <div className="">
-                                        <img
-                                            src={`${import.meta.env.BASE_URL}src/assets/uploads/${product.MaThuoc}/${product.AnhDaiDien}`}
-                                            alt={product.TenThuoc}
-                                            className="w-full h-64 object-cover"
-                                        />
-                                    </div>
-                                    <div className="p-4 flex flex-col flex-1 justify-between">
-                                        <a href='#'>
-                                            <h3 className="text-sm font-medium mb-2 line-clamp-2 group-hover:text-red-600">
-                                                {product.TenThuoc}
-                                            </h3>
-                                        </a>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-lg font-bold">{product.GiaBan.toLocaleString()}₫</span>
+                                <div key={product.MaThuoc} className="px-2">
+                                    <div className="border rounded-lg overflow-hidden group flex flex-col h-full"
+                                        onClick={() => handleProductClick(product.MaThuoc)}>
+                                        <div className="">
+                                            <img
+                                                src={`${import.meta.env.BASE_URL}src/assets/uploads/${product.MaThuoc}/${product.AnhDaiDien}`}
+                                                alt={product.TenThuoc}
+                                                className="w-full h-64 object-cover"
+                                            />
                                         </div>
-                                        {product.TrangThai === "Còn hàng" ? (
-                                            <button
-                                                // onClick={handleAddToCart}
-                                                className='flex-grow mt-4 text-white text-md rounded-md h-10 bg-orange-500 hover:bg-orange-600'
-                                            >
-                                                <ShoppingCartOutlined className='mr-1' />
-                                                CHỌN MUA
-                                            </button>
-                                        ) : (
-                                            <button className="w-full mt-4 px-4 py-2 bg-gray-200 text-gray-500 rounded cursor-not-allowed">
-                                                TẠM HẾT HÀNG
-                                            </button>
-                                        )}
+                                        <div className="p-4 flex flex-col flex-1 justify-between">
+                                            <a href='#'>
+                                                <h3 className="text-sm font-medium mb-2 line-clamp-2 group-hover:text-red-600">
+                                                    {product.TenThuoc}
+                                                </h3>
+                                            </a>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-lg font-bold">{product.GiaBan.toLocaleString()}₫</span>
+                                            </div>
+                                            {product.TrangThai === "Còn hàng" ? (
+                                                <button
+                                                    // onClick={handleAddToCart}
+                                                    className='flex-grow mt-4 text-white text-md rounded-md h-10 bg-orange-500 hover:bg-orange-600'
+                                                >
+                                                    <ShoppingCartOutlined className='mr-1' />
+                                                    CHỌN MUA
+                                                </button>
+                                            ) : (
+                                                <button className="w-full mt-4 px-4 py-2 bg-gray-200 text-gray-500 rounded cursor-not-allowed">
+                                                    TẠM HẾT HÀNG
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ))
                         }
                     </Carousel>
-                    {showLeftArrow1 && listProductRecently.length > 4 && (
+                    {showLeftArrow1 && (
                         <Button
                             icon={<LeftOutlined />}
-                            onClick={() => handlePrev(carouselRef1, setShowLeftArrow1, setShowRightArrow1)}
-                            className="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md z-10"
+                            onClick={() => carouselRef1.current.prev()}
+                            className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md"
                             shape="circle"
                         />
                     )}
-                    {showRightArrow1 && listProductRecently.length > 4 && (
+                    {showRightArrow1 && (
                         <Button
                             icon={<RightOutlined />}
-                            onClick={() => handleNext(carouselRef1, setShowLeftArrow1, setShowRightArrow1)}
-                            className="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md z-10"
+                            onClick={() => carouselRef1.current.next()}
+                            className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md"
                             shape="circle"
                         />
                     )}
@@ -478,4 +522,4 @@ export default function ProductDetail() {
             </div>
         </div>
     )
-}
+} 
