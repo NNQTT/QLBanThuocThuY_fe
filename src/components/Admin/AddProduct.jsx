@@ -13,6 +13,9 @@ const AddProduct = () => {
   const [loaiSuDungList, setLoaiSuDungList] = useState([]);
   const [profilePicture, setProfilePicture] = useState(null)
   const [selectedFiles, setSelectedFiles] = useState([])
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationType, setNotificationType] = useState('');
 
   const handleProfilePictureChange = (event) => {
     if (event.target.files && event.target.files[0]) {
@@ -178,10 +181,34 @@ const AddProduct = () => {
         });
       }
 
-      alert('Sản phẩm đã được thêm thành công cùng với các thành phần và hình ảnh!');
+      // Hiển thị thông báo thành công
+      setNotificationMessage('Thêm sản phẩm mới thành công!');
+      setNotificationType('success');
+      setShowNotification(true);
+
+      // Tự động ẩn thông báo sau 3 giây
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 3000);
+
+      // Reset form
+      e.target.reset();
+      setthanhphan([]);
+      setSelectedFiles([]);
+      setProfilePicture(null);
+
     } catch (error) {
       console.error("Error response data:", error.response?.data);
       console.error("Status code:", error.response?.status);
+      
+      // Hiển thị thông báo lỗi
+      setNotificationMessage('Có lỗi xảy ra khi thêm sản phẩm!');
+      setNotificationType('error');
+      setShowNotification(true);
+
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 3000);
     }
   };
 
@@ -199,7 +226,7 @@ const AddProduct = () => {
 
 
   return (
-<div className="bg-background mx-auto max-w-4xl p-6 rounded-lg shadow-md">
+<div className="bg-background mx-auto max-w-4xl p-6 rounded-lg shadow-md relative">
       <h2 className="text-3xl font-bold text-[#22223B] mb-6">Thêm sản phẩm mới</h2>
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -426,6 +453,29 @@ const AddProduct = () => {
           Thêm sản phẩm
         </button>
       </form>
+      {/* Notification */}
+      {showNotification && (
+        <div 
+          className={`fixed top-4 right-4 p-4 rounded-md shadow-lg ${
+            notificationType === 'success' 
+              ? 'bg-green-100 text-green-700 border border-green-400' 
+              : 'bg-red-100 text-red-700 border border-red-400'
+          }`}
+        >
+          <div className="flex items-center">
+            {notificationType === 'success' ? (
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd"/>
+              </svg>
+            )}
+            <span>{notificationMessage}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
