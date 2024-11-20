@@ -70,7 +70,7 @@ const LayoutUser = ({ onSearchResults, searchTerm, setSearchTerm }) => {
     const menuItems = [
         { text: 'Trang chủ', path: '/' },
         { text: 'Sản phẩm', path: '/listproduct' },
-        { text: 'Liên hệ', path: '/' },
+        { text: 'Liên hệ', path: '/aboutus' },
     ]
 
     const createItems = [
@@ -143,8 +143,8 @@ const LayoutUser = ({ onSearchResults, searchTerm, setSearchTerm }) => {
                     <div className="flex items-center justify-between">
                         {/* Logo */}
                         <div className="flex items-center">
-                            <img src="/placeholder.svg?height=40&width=40" alt="Logo" className="h-12 w-12 mr-3 rounded-full shadow-md" />
-                            <span className="text-2xl font-bold font-serif tracking-wide text-[#4A3228]">Phamarcy</span>
+                            {/* <img src="/placeholder.svg?height=40&width=40" alt="Logo" className="h-12 w-12 mr-3 rounded-full shadow-md" /> */}
+                            <span className="text-2xl font-bold font-serif tracking-wide text-[#4A3228]">Pharmacy</span>
                         </div>
 
                         {/* Desktop Navigation */}
@@ -275,7 +275,7 @@ const LayoutUser = ({ onSearchResults, searchTerm, setSearchTerm }) => {
                         {/* Company Info */}
                         <div className="space-y-4">
                             <div className="flex items-center">
-                                <img src="/placeholder.svg?height=40&width=40" alt="Logo" className="h-12 w-12 mr-3 rounded-full shadow-md" />
+                                {/* <img src="/placeholder.svg?height=40&width=40" alt="Logo" className="h-12 w-12 mr-3 rounded-full shadow-md" /> */}
                                 <span className="text-2xl font-bold font-serif tracking-wide text-[#4A3228]">Phamarcy</span>
                             </div>
                             <p className="text-sm">Chúng tôi cung cấp các sản phẩm dược phẩm chất lượng cao và dịch vụ chăm sóc sức khỏe tận tâm.</p>
@@ -315,19 +315,19 @@ const LayoutUser = ({ onSearchResults, searchTerm, setSearchTerm }) => {
                             <ul className="space-y-2">
                                 <li className="flex items-center">
                                     <MapPin size={18} className="mr-2 text-[#FF7F50]" />
-                                    <span>123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</span>
+                                    <span>140 Lê Trọng Tấn, Tây Thạnh, Quận Tân Phú, TP.HCM</span>
                                 </li>
                                 <li className="flex items-center">
                                     <Phone size={18} className="mr-2 text-[#FF7F50]" />
-                                    <a href="tel:+84123456789" className="hover:text-[#FF7F50] transition duration-300">
+                                    <span className="hover:text-[#FF7F50] transition duration-300">
                                         (84) 123 456 789
-                                    </a>
+                                    </span>
                                 </li>
                                 <li className="flex items-center">
                                     <Mail size={18} className="mr-2 text-[#FF7F50]" />
-                                    <a href="mailto:info@phamarcy.com" className="hover:text-[#FF7F50] transition duration-300">
-                                        info@phamarcy.com
-                                    </a>
+                                    <span className="hover:text-[#FF7F50] transition duration-300">
+                                        info@pharmacy.com
+                                    </span>
                                 </li>
                             </ul>
                         </div>

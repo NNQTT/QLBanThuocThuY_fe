@@ -1,24 +1,19 @@
-import React, { useState, lazy, Suspense } from 'react'
+import React, { useState } from 'react'
 import { Edit } from 'lucide-react'
-
-
-const ReactQuill = lazy(() => import('react-quill'))
 
 export default function DetailProduct() {
   const [isEditing, setIsEditing] = useState(false)
   const [medicine, setMedicine] = useState({
-    id: 'MED001',
-    name: 'Paracetamol',
-    price: 5000,
-    quantity: 100,
-    form: 'Viên nén',
-    packaging: 'Hộp 10 vỉ x 10 viên',
-    usage: 'Giảm đau, hạ sốt',
-    status: 'Còn hàng',
-    group: 'Thuốc giảm đau',
-    type: 'Thuốc không kê đơn',
-    ingredients: 'Paracetamol 500mg',
-    description: '<p>Paracetamol là thuốc giảm đau hạ sốt thông dụng, được sử dụng để điều trị các cơn đau từ nhẹ đến trung bình và giảm sốt.</p>'
+    maThuoc: 'MED001',
+    tenThuoc: 'Paracetamol',
+    giaBan: 5000,
+    soLuong: 100,
+    dangBaoChe: 'Viên nén',
+    qcDongGoi: 'Hộp 10 vỉ x 10 viên',
+    congDung: 'Giảm đau, hạ sốt',
+    trangThai: 'Còn hàng',
+    maNhomThuoc: 'Thuốc giảm đau',
+    maLoai: 'Thuốc không kê đơn'
   })
 
   const [editedMedicine, setEditedMedicine] = useState(medicine)
@@ -26,10 +21,6 @@ export default function DetailProduct() {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setEditedMedicine(prev => ({ ...prev, [name]: value }))
-  }
-
-  const handleRichTextChange = (value) => {
-    setEditedMedicine(prev => ({ ...prev, description: value }))
   }
 
   const handleSave = () => {
@@ -43,7 +34,7 @@ export default function DetailProduct() {
         <div className="md:w-1/3">
           <img
             src="/placeholder.svg"
-            alt={medicine.name}
+            alt={medicine.tenThuoc}
             width={400}
             height={400}
             className="rounded-lg shadow-md mb-4"
@@ -53,7 +44,7 @@ export default function DetailProduct() {
               <img
                 key={index}
                 src="/placeholder.svg"
-                alt={`${medicine.name} ${index + 1}`}
+                alt={`${medicine.tenThuoc} ${index + 1}`}
                 width={100}
                 height={100}
                 className="rounded-md shadow-sm"
@@ -63,7 +54,7 @@ export default function DetailProduct() {
         </div>
         <div className="md:w-2/3">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">{medicine.name}</h1>
+            <h1 className="text-3xl font-bold">{medicine.tenThuoc}</h1>
             <button 
               className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
               onClick={() => setIsEditing(true)}
@@ -80,103 +71,103 @@ export default function DetailProduct() {
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="id" className="block text-sm font-medium text-gray-700">Mã Thuốc</label>
+                        <label htmlFor="maThuoc" className="block text-sm font-medium text-gray-700">Mã Thuốc</label>
                         <input 
-                          id="id" 
-                          name="id" 
-                          value={editedMedicine.id} 
+                          id="maThuoc" 
+                          name="maThuoc" 
+                          value={editedMedicine.maThuoc} 
                           onChange={handleInputChange} 
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Tên thuốc</label>
+                        <label htmlFor="tenThuoc" className="block text-sm font-medium text-gray-700">Tên thuốc</label>
                         <input 
-                          id="name" 
-                          name="name" 
-                          value={editedMedicine.name} 
+                          id="tenThuoc" 
+                          name="tenThuoc" 
+                          value={editedMedicine.tenThuoc} 
                           onChange={handleInputChange} 
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
-                        <label htmlFor="price" className="block text-sm font-medium text-gray-700">Giá bán</label>
+                        <label htmlFor="giaBan" className="block text-sm font-medium text-gray-700">Giá bán</label>
                         <input 
-                          id="price" 
-                          name="price" 
+                          id="giaBan" 
+                          name="giaBan" 
                           type="number" 
-                          value={editedMedicine.price} 
+                          value={editedMedicine.giaBan} 
                           onChange={handleInputChange} 
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
-                        <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Số lượng</label>
+                        <label htmlFor="soLuong" className="block text-sm font-medium text-gray-700">Số lượng</label>
                         <input 
-                          id="quantity" 
-                          name="quantity" 
+                          id="soLuong" 
+                          name="soLuong" 
                           type="number" 
-                          value={editedMedicine.quantity} 
+                          value={editedMedicine.soLuong} 
                           onChange={handleInputChange} 
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
-                        <label htmlFor="form" className="block text-sm font-medium text-gray-700">Dạng bào chế</label>
+                        <label htmlFor="dangBaoChe" className="block text-sm font-medium text-gray-700">Dạng bào chế</label>
                         <input 
-                          id="form" 
-                          name="form" 
-                          value={editedMedicine.form} 
+                          id="dangBaoChe" 
+                          name="dangBaoChe" 
+                          value={editedMedicine.dangBaoChe} 
                           onChange={handleInputChange} 
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
-                        <label htmlFor="packaging" className="block text-sm font-medium text-gray-700">Quy cách đóng gói</label>
+                        <label htmlFor="qcDongGoi" className="block text-sm font-medium text-gray-700">Quy cách đóng gói</label>
                         <input 
-                          id="packaging" 
-                          name="packaging" 
-                          value={editedMedicine.packaging} 
+                          id="qcDongGoi" 
+                          name="qcDongGoi" 
+                          value={editedMedicine.qcDongGoi} 
                           onChange={handleInputChange} 
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
-                        <label htmlFor="usage" className="block text-sm font-medium text-gray-700">Công dụng</label>
+                        <label htmlFor="congDung" className="block text-sm font-medium text-gray-700">Công dụng</label>
                         <input 
-                          id="usage" 
-                          name="usage" 
-                          value={editedMedicine.usage} 
+                          id="congDung" 
+                          name="congDung" 
+                          value={editedMedicine.congDung} 
                           onChange={handleInputChange} 
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-700">Trạng thái</label>
+                        <label htmlFor="trangThai" className="block text-sm font-medium text-gray-700">Trạng thái</label>
                         <input 
-                          id="status" 
-                          name="status" 
-                          value={editedMedicine.status} 
+                          id="trangThai" 
+                          name="trangThai" 
+                          value={editedMedicine.trangThai} 
                           onChange={handleInputChange} 
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
-                        <label htmlFor="group" className="block text-sm font-medium text-gray-700">Nhóm thuốc</label>
+                        <label htmlFor="maNhomThuoc" className="block text-sm font-medium text-gray-700">Nhóm thuốc</label>
                         <input 
-                          id="group" 
-                          name="group" 
-                          value={editedMedicine.group} 
+                          id="maNhomThuoc" 
+                          name="maNhomThuoc" 
+                          value={editedMedicine.maNhomThuoc} 
                           onChange={handleInputChange} 
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
                       </div>
                       <div>
-                        <label htmlFor="type" className="block text-sm font-medium text-gray-700">Loại sử dụng</label>
+                        <label htmlFor="maLoai" className="block text-sm font-medium text-gray-700">Loại sử dụng</label>
                         <input 
-                          id="type" 
-                          name="type" 
-                          value={editedMedicine.type} 
+                          id="maLoai" 
+                          name="maLoai" 
+                          value={editedMedicine.maLoai} 
                           onChange={handleInputChange} 
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
@@ -194,9 +185,13 @@ export default function DetailProduct() {
                     </div>
                     <div>
                       <label htmlFor="description" className="block text-sm font-medium text-gray-700">Mô tả</label>
-                      <Suspense fallback={<div>Loading editor...</div>}>
-                        <ReactQuill theme="snow" value={editedMedicine.description} onChange={handleRichTextChange} />
-                      </Suspense>
+                      <textarea
+                        id="description"
+                        name="description"
+                        value={editedMedicine.description}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                      />
                     </div>
                   </div>
                   <div className="flex justify-end gap-4 mt-4">
@@ -220,39 +215,39 @@ export default function DetailProduct() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="font-semibold">Mã Thuốc:</p>
-              <p>{medicine.id}</p>
+              <p>{medicine.maThuoc}</p>
             </div>
             <div>
               <p className="font-semibold">Giá bán:</p>
-              <p>{medicine.price.toLocaleString('vi-VN')} VNĐ</p>
+              <p>{medicine.giaBan.toLocaleString('vi-VN')} VNĐ</p>
             </div>
             <div>
               <p className="font-semibold">Số lượng:</p>
-              <p>{medicine.quantity}</p>
+              <p>{medicine.soLuong}</p>
             </div>
             <div>
               <p className="font-semibold">Dạng bào chế:</p>
-              <p>{medicine.form}</p>
+              <p>{medicine.dangBaoChe}</p>
             </div>
             <div>
               <p className="font-semibold">Quy cách đóng gói:</p>
-              <p>{medicine.packaging}</p>
+              <p>{medicine.qcDongGoi}</p>
             </div>
             <div>
               <p className="font-semibold">Công dụng:</p>
-              <p>{medicine.usage}</p>
+              <p>{medicine.congDung}</p>
             </div>
             <div>
               <p className="font-semibold">Trạng thái:</p>
-              <p>{medicine.status}</p>
+              <p>{medicine.trangThai}</p>
             </div>
             <div>
               <p className="font-semibold">Nhóm thuốc:</p>
-              <p>{medicine.group}</p>
+              <p>{medicine.maNhomThuoc}</p>
             </div>
             <div>
               <p className="font-semibold">Loại sử dụng:</p>
-              <p>{medicine.type}</p>
+              <p>{medicine.maLoai}</p>
             </div>
           </div>
           <div className="mt-4">

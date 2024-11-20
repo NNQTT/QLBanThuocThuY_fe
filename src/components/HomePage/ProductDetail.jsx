@@ -44,7 +44,7 @@ export default function ProductDetail() {
                 })
                 console.log('res:', res.data)
                 if (!res.data.success) {
-                    message.error('Thêm vào giỏ hàng thất bại')
+                    message.error(res.data.message)
                     return
                 }
             }
