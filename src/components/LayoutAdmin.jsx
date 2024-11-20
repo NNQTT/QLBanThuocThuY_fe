@@ -91,14 +91,9 @@ const LayoutAdmin = () => {
 
                     {/* User profile */}
                     <div className="p-4 border-t border-[#F4A261] flex items-center">
-                        <img
-                            src="/placeholder.svg?height=40&width=40"
-                            alt="User avatar"
-                            className="w-10 h-10 rounded-full mr-3 border-2 border-[#E76F51] shadow-md"
-                        />
                         {isOpen && (
                             <div className="flex-grow">
-                                <p className="text-xs text-[#4A4E69]">{infoadmin?.tentaikhoan}</p>
+                                <p className="text-lg uppercase text-[#4A4E69]">{infoadmin?.tentaikhoan}</p>
                             </div>
                         )}
                         {isOpen && (
