@@ -84,11 +84,11 @@ export default function ProductDetail() {
 
     const handleCarouselChange = (current, carouselRef, setShowLeft, setShowRight) => {
         if (!carouselRef.current) return;
-        
+
         const totalItems = carouselRef.current.innerSlider.state.slideCount;
         const slidesToShow = 4;
         const maxSlide = totalItems - slidesToShow;
-        
+
         setShowLeft(current > 0);
         setShowRight(current < maxSlide);
     }
@@ -281,43 +281,70 @@ export default function ProductDetail() {
                             {Number(product.GiaBan).toLocaleString()}₫
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <span className="text-gray-700">Chọn số lượng:</span>
-                            <div className="flex items-center border rounded">
-                                <Button
-                                    icon={<MinusOutlined />}
-                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="text-gray-600 hover:text-red-600"
-                                />
-                                <InputNumber
-                                    min={1}
-                                    value={quantity}
-                                    onChange={(value) => setQuantity(value)}
-                                    className="w-16 text-center border-none"
-                                />
-                                <Button
-                                    icon={<PlusOutlined />}
-                                    onClick={() => setQuantity(quantity + 1)}
-                                    className="text-gray-600 hover:text-red-600"
-                                />
-                            </div>
-                        </div>
-
                         <div className="flex gap-4">
                             {product.TrangThai === "Còn hàng" ? (
                                 <>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-gray-700">Chọn số lượng:</span>
+                                        <div className="flex items-center border rounded">
+                                            <Button
+                                                icon={<MinusOutlined />}
+                                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                                className="text-gray-600 hover:text-red-600"
+                                            />
+                                            <span
+                                                min={1}
+                                                value={quantity}
+                                                onChange={(value) => setQuantity(value)}
+                                                className="w-10 text-center border-none"
+                                            >
+                                                {quantity}
+                                            </span>
+
+                                            <Button
+                                                icon={<PlusOutlined />}
+                                                onClick={() => setQuantity(quantity + 1)}
+                                                className="text-gray-600 hover:text-red-600"
+                                            />
+                                        </div>
+                                    </div>
                                     <Button
                                         onClick={handleAddToCart}
                                         icon={<ShoppingCartOutlined />}
-                                        className="flex-1 h-12 bg-orange-500 hover:bg-orange-600 text-white border-none"
+                                        className="flex-1 h-12 bg-orange-500 hover:!bg-orange-600 hover:!text-white text-white border-none"
                                     >
-                                        THÊM VÀO GIỎ
+                                        THÊM VÀO GIỎ HÀNG
                                     </Button>
                                 </>
                             ) : (
-                                <Button disabled className="flex-1 h-12 bg-gray-200 text-gray-500 cursor-not-allowed">
-                                    TẠM HẾT HÀNG
-                                </Button>
+                                <>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-gray-700">Chọn số lượng:</span>
+                                        <div className="flex items-center border rounded">
+                                            <Button
+                                                icon={<MinusOutlined />}
+                                                className="text-gray-600 cursor-not-allowed"
+                                            />
+                                            <span
+                                                min={1}
+                                                value={quantity}
+                                                onChange={(value) => setQuantity(value)}
+                                                className="w-10 text-center border-none"
+                                            >
+                                                {quantity}
+                                            </span>
+
+                                            <Button
+                                                icon={<PlusOutlined />}
+                                                className="text-gray-600 cursor-not-allowed"
+                                            />
+                                        </div>
+                                    </div>
+                                    <Button disabled className="flex-1 h-12 bg-gray-200 text-gray-600 cursor-not-allowed">
+                                        TẠM HẾT HÀNG
+                                    </Button>
+                                </>
+
                             )}
                         </div>
 
@@ -353,7 +380,7 @@ export default function ProductDetail() {
                         infinite={false}
                         dots={false}
                         speed={500}
-                        className='carousel-container'
+                        className='flex justify-center items-center overflow-hidden'
                         beforeChange={(current, next) => handleCarouselChange(next, carouselRef, setShowLeftArrow, setShowRightArrow)}
                     >
                         {listProduct.length > 0 && listProduct
@@ -380,7 +407,6 @@ export default function ProductDetail() {
                                             </div>
                                             {product.TrangThai === "Còn hàng" ? (
                                                 <button
-                                                    // onClick={handleAddToCart}
                                                     className='flex-grow mt-4 text-white text-md rounded-md h-10 bg-orange-500 hover:bg-orange-600'
                                                 >
                                                     <ShoppingCartOutlined className='mr-1' />
@@ -400,7 +426,7 @@ export default function ProductDetail() {
                         <Button
                             icon={<LeftOutlined />}
                             onClick={() => handlePrev(carouselRef, setShowLeftArrow, setShowRightArrow)}
-                            className="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md z-10"
+                            className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md"
                             shape="circle"
                         />
                     )}
@@ -408,7 +434,7 @@ export default function ProductDetail() {
                         <Button
                             icon={<RightOutlined />}
                             onClick={() => handleNext(carouselRef, setShowLeftArrow, setShowRightArrow)}
-                            className="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md z-10"
+                            className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white/80 hover:bg-white shadow-md"
                             shape="circle"
                         />
                     )}
