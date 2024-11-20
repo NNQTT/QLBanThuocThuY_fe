@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Search, ChevronLeft, ChevronRight, Eye, Edit, Filter, RefreshCcw, ChevronDown } from 'lucide-react'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Admin = () => {
     const [searchTerm, setSearchTerm] = useState('')
@@ -12,10 +12,13 @@ const Admin = () => {
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(true)
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         const fetchProducts = async () => {
             try {
                 const response = await axios.get('http://localhost:3000/admin/getthuoc')
+                console.log("Products fetched:", response.data)
                 setProducts(response.data)
             } catch (error) {
                 console.error("Error fetching products data:", error)
@@ -57,6 +60,17 @@ const Admin = () => {
         'Sắp hết hàng': 'bg-yellow-100 text-yellow-800 border-yellow-300',
         'Tạm hết hàng': 'bg-red-100 text-red-800 border-red-300',
     }
+
+    const handleEdit = (maThuoc) => {
+        console.log("MaThuoc being passed:", maThuoc);
+        if (!maThuoc) {
+            console.error("MaThuoc is undefined");
+            return;
+        }
+        const url = `/admin/detailproduct/${maThuoc}`;
+        console.log("Navigating to:", url);
+        navigate(url);
+    };
 
     if (loading) {
         return <div className="text-center py-4">Loading...</div>
@@ -127,10 +141,14 @@ const Admin = () => {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div className="flex">
-                                        <button variant="ghost" size="sm" className="text-green-600 hover:text-green-900 transition-colors duration-200 transform hover:scale-110" title="Chỉnh sửa">
-                                            <Link to="/admin/detailproduct">
-                                                <Edit size={18} />
-                                            </Link>
+                                        <button 
+                                            onClick={() => {
+                                                console.log("Product being edited:", product);
+                                                handleEdit(product.MaThuoc);
+                                            }}
+                                            className="text-blue-600 hover:text-blue-900"
+                                        >
+                                            <Edit size={20} />
                                         </button>
                                     </div>
                                 </td>
