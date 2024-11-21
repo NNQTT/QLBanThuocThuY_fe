@@ -135,9 +135,19 @@ const ListProduct = ({ searchResults, setSearchResults, searchTerm }) => {
     console.log("Current groupName and price:", groupName, priceFilter);
   };
 
+  useEffect(() => {
+    if (searchResults && searchResults.length > 0) {
+        setPriceFilter('');
+        setSortBy('default');
+        setGroupName('');
+        setCurrentPage(1);
+    }
+  }, [searchResults]);
+
   console.log("group: ", groupName);
 
-  const displayProducts = (searchResults && searchResults.length) ? searchResults : listProduct;
+  console.log('search on list product:', searchResults)
+  const displayProducts = searchResults?.length > 0 ? searchResults : listProduct;
 
   const groupTitleMap = {
     N1: "CHẾ PHẨM SINH HỌC",
@@ -148,6 +158,8 @@ const ListProduct = ({ searchResults, setSearchResults, searchTerm }) => {
   };
 
   const currentGroupTitle = groupTitleMap[groupName] || 'Thuốc Thú Y';
+
+
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -187,10 +199,15 @@ const ListProduct = ({ searchResults, setSearchResults, searchTerm }) => {
 
       {/* Header and Filters */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        {searchResults.length > 0 ? (
-          <span className="text-2xl text-gray-900">
-            Kết quả tìm kiếm cho <strong>"{searchTerm}"</strong>
-          </span>
+        {searchResults?.length > 0 ? (
+          <div>
+            <span className="text-2xl text-gray-900">
+              Kết quả tìm kiếm cho <strong>"{searchTerm}"</strong>
+            </span>
+            <span className="ml-2 text-gray-600">
+              ({searchResults.length} sản phẩm)
+            </span>
+          </div>
         ) : (
           <>
             <h1 className="text-2xl font-bold text-gray-900">{currentGroupTitle}</h1>
@@ -285,35 +302,37 @@ const ListProduct = ({ searchResults, setSearchResults, searchTerm }) => {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-center items-center mt-8 space-x-4">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-4 py-2 bg-orange-500 rounded-md hover:bg-orange-600 disabled:opacity-50"
-        >
-          &laquo;
-        </button>
-        {Array.from({ length: totalPages }, (_, index) => {
-          const page = index + 1;
-          return (
-            <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              className={`px-4 py-2 rounded-md ${currentPage === page ? 'bg-orange-600 text-white' : 'bg-orange-500 hover:bg-orange-600'
-                }`}
-            >
-              {page}
-            </button>
-          );
-        })}
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-orange-500 rounded-md hover:bg-orange-600 disabled:opacity-50"
-        >
-          &raquo;
-        </button>
-      </div>
+      {!searchResults?.length && (
+        <div className="flex justify-center items-center mt-8 space-x-4">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-orange-500 rounded-md hover:bg-orange-600 disabled:opacity-50"
+          >
+            &laquo;
+          </button>
+          {Array.from({ length: totalPages }, (_, index) => {
+            const page = index + 1;
+            return (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`px-4 py-2 rounded-md ${currentPage === page ? 'bg-orange-600 text-white' : 'bg-orange-500 hover:bg-orange-600'
+                  }`}
+              >
+                {page}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-orange-500 rounded-md hover:bg-orange-600 disabled:opacity-50"
+          >
+            &raquo;
+          </button>
+        </div>
+      )}
     </div>
   );
 };
