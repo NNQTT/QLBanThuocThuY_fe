@@ -108,7 +108,6 @@ const DetailProduct = () => {
   const handleSave = async () => {
     try {
         const tenTaiKhoan = localStorage.getItem('adminUsername');
-        console.log('TenTaiKhoan trước khi gửi:', tenTaiKhoan);
 
         if (!tenTaiKhoan) {
             const userResponse = await axios.get('http://localhost:3000/api/getCurrentUser', {
