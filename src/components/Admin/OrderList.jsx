@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, Eye, Edit, Filter, RefreshCcw, ChevronDown, ChevronUp, X, Calendar, Package, DollarSign, Tag, Phone, MapPin} from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Eye, Edit, Filter, RefreshCcw, ChevronDown, ChevronUp, X, Calendar, Package, DollarSign, Tag, Phone, MapPin } from 'lucide-react';
 import axios from 'axios';
 
 const OrderList = () => {
@@ -129,7 +129,7 @@ const OrderList = () => {
         })
         .sort((a, b) => {
             const direction = sortDirection === 'desc' ? 1 : -1;
-            
+
             switch (sortColumn) {
                 case 'id':
                     return direction * (a.MaDonHang - b.MaDonHang);
@@ -373,7 +373,7 @@ const OrderList = () => {
                             {isEditing && (
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                                    className="px-4 py-2 bg-[#FF7F50] text-white rounded hover:scale-105 transition-colors"
                                 >
                                     Lưu thay đổi
                                 </button>
@@ -465,9 +465,8 @@ const OrderList = () => {
                                 ].map((column) => (
                                     <th
                                         key={column.id}
-                                        className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${
-                                            column.sortable !== false ? 'cursor-pointer hover:bg-[#FFD6BA] transition-colors duration-200' : ''
-                                        }`}
+                                        className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${column.sortable !== false ? 'cursor-pointer hover:bg-[#FFD6BA] transition-colors duration-200' : ''
+                                            }`}
                                         onClick={() => column.sortable !== false && handleSort(column.id)}
                                     >
                                         <div className="flex items-center space-x-1">
@@ -476,19 +475,17 @@ const OrderList = () => {
                                                 <div className="flex flex-col">
                                                     <ChevronUp
                                                         size={12}
-                                                        className={`${
-                                                            sortColumn === column.id && sortDirection === 'asc'
+                                                        className={`${sortColumn === column.id && sortDirection === 'asc'
                                                                 ? 'text-[#E76F51]'
                                                                 : 'text-gray-400'
-                                                        }`}
+                                                            }`}
                                                     />
                                                     <ChevronDown
                                                         size={12}
-                                                        className={`${
-                                                            sortColumn === column.id && sortDirection === 'desc'
+                                                        className={`${sortColumn === column.id && sortDirection === 'desc'
                                                                 ? 'text-[#E76F51]'
                                                                 : 'text-gray-400'
-                                                        }`}
+                                                            }`}
                                                     />
                                                 </div>
                                             )}
