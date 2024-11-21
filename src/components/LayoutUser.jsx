@@ -51,15 +51,18 @@ const LayoutUser = ({ onSearchResults, searchTerm, setSearchTerm }) => {
     };
 
     const handleSearch = async (e) => {
-        setSearchTerm(e.target.value);
-        if(e.key === "Enter" && searchTerm){
+        if (e.key === "Enter" && searchTerm) {
             try {
                 const res = await axios.get(`http://localhost:3000/product/getproductsbyname`, {
-                    params: { searchTerm }
+                    params: { 
+                        searchTerm,
+                        page: 1,
+                        pagesize: 12
+                    }
                 });
-                onSearchResults(res.data);
-                console.log("search:", res.data);
-                console.log("search term:", searchTerm);
+                
+                onSearchResults(res.data.products);
+                console.log("Search results in LayoutUser:", res.data);
                 nav('/listproduct');
             } catch (err) {
                 console.error('Error:', err);
