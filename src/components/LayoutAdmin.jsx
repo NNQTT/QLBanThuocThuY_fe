@@ -50,6 +50,23 @@ const LayoutAdmin = () => {
         }
     }, []);
 
+    const handleLogout = async () => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('adminUsername');
+        try {
+
+            console.log("TT:");
+            const res = await axios.post('http://localhost:3000/api/logout', {}, {
+                withCredentials: true
+            });
+            if (res.status === 204) {
+                navigate('/');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     return (
         <div>
             <div className="flex h-screen bg-gray-50">
@@ -102,6 +119,7 @@ const LayoutAdmin = () => {
                             <button
                                 className="p-2 rounded-full hover:bg-[#F4A261] focus:outline-none focus:ring-2 focus:ring-[#E76F51] transition-colors duration-200 text-[#22223B]"
                                 aria-label="Đăng xuất"
+                                onClick={handleLogout}
                             >
                                 <LogOut size={20} />
                             </button>
