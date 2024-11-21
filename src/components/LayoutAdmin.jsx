@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Package, PlusCircle, ShoppingCart, ChevronRight, Menu, LogOut } from 'lucide-react'
+import { Package, PlusCircle, ShoppingCart, ChevronRight, Menu, LogOut, History } from 'lucide-react'
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -12,7 +12,9 @@ const LayoutAdmin = () => {
     const menuItems = [
         { icon: Package, text: 'Xem tất cả sản phẩm', path: '/admin' },
         { icon: PlusCircle, text: 'Thêm sản phẩm mới', path: '/admin/addproduct' },
+        { icon: History, text: 'Lịch sử cập nhật', path: '/admin/lichsuthuoc' },
         { icon: ShoppingCart, text: 'Quản lý đơn hàng', path: '/admin/orderlist' },
+        
     ]
 
     const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { Search, ChevronLeft, ChevronRight, Eye, Edit, Filter, RefreshCcw, ChevronDown } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Eye, Edit, Filter, RefreshCcw, ChevronDown, History } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom';
 
 const Admin = () => {
@@ -140,15 +140,18 @@ const Admin = () => {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div className="flex">
+                                    <div className="flex space-x-2">
                                         <button 
-                                            onClick={() => {
-                                                console.log("Product being edited:", product);
-                                                handleEdit(product.MaThuoc);
-                                            }}
+                                            onClick={() => handleEdit(product.MaThuoc)}
                                             className="text-blue-600 hover:text-blue-900"
                                         >
                                             <Edit size={20} />
+                                        </button>
+                                        <button 
+                                            onClick={() => navigate(`/admin/lichsuthuoc/${product.MaThuoc}`)}
+                                            className="text-gray-600 hover:text-gray-900"
+                                        >
+                                            <History size={20} />
                                         </button>
                                     </div>
                                 </td>
